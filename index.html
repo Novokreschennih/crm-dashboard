@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CRM Дашборд | NeuroGen</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: var(--tg-theme-bg-color, #ffffff);
+      color: var(--tg-theme-text-color, #000000);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .stat-card.paid {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .lead-row:nth-child(even) {
+      background-color: var(--tg-theme-secondary-bg-color, #f7f7f7);
+    }
+    .filter-btn.active {
+      background: var(--tg-theme-button-color, #667eea);
+      color: white;
+    }
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px;
+    }
+    .spinner {
+      border: 4px solid rgba(102, 126, 234, 0.1);
+      border-left-color: #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-20">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 shadow-lg">
+    <div class="flex items-center justify-between">
+      <h1 class="text-xl font-bold">📊 CRM Дашборд</h1>
+      <span id="botName" class="text-sm opacity-80"></span>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <div class="p-4 grid grid-cols-2 gap-3">
+    <div class="stat-card rounded-xl p-4 shadow-lg">
+      <div class="text-3xl font-bold" id="totalLeads">0</div>
+      <div class="text-sm opacity-90">Всего лидов</div>
+    </div>
+    <div class="stat-card paid rounded-xl p-4 shadow-lg">
+      <div class="text-3xl font-bold" id="paidLeads">0</div>
+      <div class="text-sm opacity-90">Оплатили (PRO)</div>
+    </div>
+  </div>
+
+  <!-- Stats by Stage -->
+  <div class="px-4 mb-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow">
+      <h3 class="font-semibold mb-3 text-sm text-gray-500 dark:text-gray-400">ПО ВОРОНКЕ</h3>
+      <div class="space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="text-sm">🚀 Старт</span>
+          <span class="font-semibold" id="stageStart">0</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm">🎓 Обучение</span>
+          <span class="font-semibold" id="stageTraining">0</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm">⚡ Tripwire</span>
+          <span class="font-semibold" id="stageTripwire">0</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-sm">🎁 Выдача</span>
+          <span class="font-semibold" id="stageDelivery">0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="px-4 mb-4">
+    <div class="flex gap-2 overflow-x-auto pb-2">
+      <button class="filter-btn active px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap bg-purple-100 text-purple-700" data-filter="all">
+        Все
+      </button>
+      <button class="filter-btn px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 text-gray-700" data-filter="PRO">
+        ✅ PRO
+      </button>
+      <button class="filter-btn px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 text-gray-700" data-filter="FREE">
+        🔍 FREE
+      </button>
+      <button class="filter-btn px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap bg-gray-100 text-gray-700" data-filter="tripwire">
+        ⚡ Не купили
+      </button>
+    </div>
+  </div>
+
+  <!-- Leads Table -->
+  <div class="px-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
+      <div class="p-3 border-b dark:border-gray-700 flex justify-between items-center">
+        <h3 class="font-semibold">Список лидов</h3>
+        <span class="text-xs text-gray-500" id="leadsCount">0</span>
+      </div>
+      
+      <div id="loading" class="loading">
+        <div class="spinner"></div>
+      </div>
+      
+      <div id="leadsList" class="max-h-96 overflow-y-auto hidden">
+        <table class="w-full">
+          <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0">
+            <tr>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                <input type="checkbox" id="selectAll" class="rounded">
+              </th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Имя</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Статус</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Уровень</th>
+            </tr>
+          </thead>
+          <tbody id="leadsBody"></tbody>
+        </table>
+      </div>
+      
+      <div id="noLeads" class="p-8 text-center text-gray-500 hidden">
+        Нет лидов для отображения
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700 shadow-lg">
+    <div class="flex gap-2">
+      <button id="broadcastBtn" class="flex-1 btn-primary text-white py-3 rounded-xl font-semibold" disabled>
+        ✉️ Рассылка
+      </button>
+      <button id="exportBtn" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white py-3 rounded-xl font-semibold">
+        📥 CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Broadcast Modal -->
+  <div id="broadcastModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm mx-4">
+      <h3 class="text-lg font-bold mb-4">📢 Рассылка</h3>
+      <p class="text-sm text-gray-500 mb-3">
+        Отправить <span id="broadcastCount">0</span> выбранным лидам
+      </p>
+      <textarea 
+        id="broadcastMessage" 
+        class="w-full border rounded-lg p-3 h-32 text-sm mb-4 dark:bg-gray-700 dark:border-gray-600"
+        placeholder="Введите текст сообщения..."
+      ></textarea>
+      <div class="flex gap-2">
+        <button id="cancelBroadcast" class="flex-1 py-2 rounded-lg bg-gray-200 dark:bg-gray-700">
+          Отмена
+        </button>
+        <button id="sendBroadcast" class="flex-1 py-2 rounded-lg btn-primary text-white">
+          Отправить
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Инициализация Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    // Конфигурация
+    const API_HOST = window.location.hostname === 'localhost' 
+      ? 'http://localhost:3000' 
+      : `https://${window.location.hostname}`;
+    const CRM_SECRET = 'super_secret_crm_123'; // Заменить на переменную окружения в проде
+
+    // Получаем токен бота из initData
+    function getBotToken() {
+      // В реальном приложении токен бота должен передаваться через URL параметр
+      // или извлекаться из initData после валидации на сервере
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('bot_token') || '';
+    }
+
+    // Глобальное состояние
+    let allLeads = [];
+    let filteredLeads = [];
+    let currentFilter = 'all';
+    let selectedLeads = new Set();
+
+    // DOM элементы
+    const loadingEl = document.getElementById('loading');
+    const leadsListEl = document.getElementById('leadsList');
+    const leadsBodyEl = document.getElementById('leadsBody');
+    const noLeadsEl = document.getElementById('noLeads');
+    const broadcastModal = document.getElementById('broadcastModal');
+
+    // Загрузка данных
+    async function loadCRMData() {
+      try {
+        const botToken = getBotToken();
+        if (!botToken) {
+          showError('Не указан токен бота');
+          return;
+        }
+
+        const response = await fetch(`${API_HOST}/?action=get_crm_data&key=${CRM_SECRET}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-crm-key': CRM_SECRET,
+          },
+          body: JSON.stringify({ bot_token: botToken }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Ошибка загрузки данных');
+        }
+
+        const data = await response.json();
+        allLeads = data.leads || [];
+        updateStats(data.stats);
+        applyFilter(currentFilter);
+        
+        loadingEl.classList.add('hidden');
+        leadsListEl.classList.remove('hidden');
+        
+        if (allLeads.length === 0) {
+          noLeadsEl.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Error loading CRM data:', error);
+        showError('Ошибка загрузки данных');
+      }
+    }
+
+    // Обновление статистики
+    function updateStats(stats) {
+      document.getElementById('totalLeads').textContent = stats?.total || 0;
+      document.getElementById('paidLeads').textContent = stats?.paid || 0;
+      document.getElementById('stageStart').textContent = stats?.byStage?.start || 0;
+      document.getElementById('stageTraining').textContent = stats?.byStage?.training || 0;
+      document.getElementById('stageTripwire').textContent = stats?.byStage?.tripwire || 0;
+      document.getElementById('stageDelivery').textContent = stats?.byStage?.delivery || 0;
+      document.getElementById('leadsCount').textContent = allLeads.length;
+    }
+
+    // Применение фильтра
+    function applyFilter(filter) {
+      currentFilter = filter;
+      
+      switch (filter) {
+        case 'PRO':
+          filteredLeads = allLeads.filter(l => l.bought_tripwire);
+          break;
+        case 'FREE':
+          filteredLeads = allLeads.filter(l => !l.bought_tripwire);
+          break;
+        case 'tripwire':
+          filteredLeads = allLeads.filter(l => l.state.includes('Tripwire') && !l.bought_tripwire);
+          break;
+        default:
+          filteredLeads = allLeads;
+      }
+
+      renderLeads();
+      updateFilterButtons();
+    }
+
+    // Обновление кнопок фильтров
+    function updateFilterButtons() {
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === currentFilter);
+        btn.classList.toggle('bg-purple-100', btn.dataset.filter === currentFilter);
+        btn.classList.toggle('text-purple-700', btn.dataset.filter === currentFilter);
+        btn.classList.toggle('bg-gray-100', btn.dataset.filter !== currentFilter);
+        btn.classList.toggle('text-gray-700', btn.dataset.filter !== currentFilter);
+      });
+    }
+
+    // Рендер лидов
+    function renderLeads() {
+      leadsBodyEl.innerHTML = '';
+      
+      filteredLeads.forEach((lead, index) => {
+        const row = document.createElement('tr');
+        row.className = 'lead-row border-b dark:border-gray-700 hover:bg-purple-50 dark:hover:bg-gray-700';
+        
+        const tier = lead.bought_tripwire ? 'PRO' : 'FREE';
+        const tierClass = lead.bought_tripwire 
+          ? 'bg-purple-100 text-purple-700' 
+          : 'bg-gray-100 text-gray-700';
+        
+        const shortStatus = lead.state.replace('Training_', '').replace('Tripwire_', '').replace('Delivery_', '');
+        
+        row.innerHTML = `
+          <td class="px-3 py-3">
+            <input type="checkbox" 
+                   class="lead-checkbox rounded" 
+                   data-index="${index}"
+                   ${selectedLeads.has(index) ? 'checked' : ''}>
+          </td>
+          <td class="px-3 py-3 text-sm font-medium">
+            ${lead.first_name || 'Аноним'}
+          </td>
+          <td class="px-3 py-3 text-sm text-gray-500 dark:text-gray-400">
+            ${shortStatus}
+          </td>
+          <td class="px-3 py-3">
+            <span class="px-2 py-1 rounded text-xs font-medium ${tierClass}">
+              ${tier}
+            </span>
+          </td>
+        `;
+        
+        leadsBodyEl.appendChild(row);
+      });
+
+      // Обработчики чекбоксов
+      document.querySelectorAll('.lead-checkbox').forEach(cb => {
+        cb.addEventListener('change', (e) => {
+          const index = parseInt(e.target.dataset.index);
+          if (e.target.checked) {
+            selectedLeads.add(index);
+          } else {
+            selectedLeads.delete(index);
+          }
+          updateBroadcastButton();
+        });
+      });
+
+      document.getElementById('leadsCount').textContent = filteredLeads.length;
+    }
+
+    // Обновление кнопки рассылки
+    function updateBroadcastButton() {
+      const btn = document.getElementById('broadcastBtn');
+      btn.disabled = selectedLeads.size === 0;
+      btn.textContent = selectedLeads.size > 0 
+        ? `✉️ Рассылка (${selectedLeads.size})` 
+        : '✉️ Рассылка';
+    }
+
+    // Показать ошибку
+    function showError(message) {
+      tg.showPopup({
+        title: 'Ошибка',
+        message: message,
+        buttons: [{ type: 'ok' }]
+      });
+    }
+
+    // Экспорт в CSV
+    async function exportCSV() {
+      try {
+        const botToken = getBotToken();
+        const response = await fetch(`${API_HOST}/?action=export_csv&key=${CRM_SECRET}`, {
+          method: 'POST',
+          headers: {
+            'x-crm-key': CRM_SECRET,
+          },
+          body: JSON.stringify({ bot_token: botToken }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Ошибка экспорта');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'leads.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        tg.showAlert('База экспортирована в CSV');
+      } catch (error) {
+        console.error('Export error:', error);
+        showError('Ошибка экспорта');
+      }
+    }
+
+    // Отправка рассылки
+    async function sendBroadcast() {
+      const message = document.getElementById('broadcastMessage').value.trim();
+      if (!message) {
+        tg.showAlert('Введите текст сообщения');
+        return;
+      }
+
+      const botToken = getBotToken();
+      const userIds = Array.from(selectedLeads).map(i => filteredLeads[i].user_id);
+
+      try {
+        const response = await fetch(`${API_HOST}/?action=send_crm_broadcast&key=${CRM_SECRET}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-crm-key': CRM_SECRET,
+          },
+          body: JSON.stringify({
+            bot_token: botToken,
+            message: message,
+            user_ids: userIds,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Ошибка отправки');
+        }
+
+        const result = await response.json();
+        
+        broadcastModal.classList.add('hidden');
+        selectedLeads.clear();
+        document.getElementById('broadcastMessage').value = '';
+        updateBroadcastButton();
+
+        tg.showPopup({
+          title: 'Готово',
+          message: `Отправлено: ${result.sent}\nОшибок: ${result.failed}`,
+          buttons: [{ type: 'ok' }]
+        });
+      } catch (error) {
+        console.error('Broadcast error:', error);
+        showError('Ошибка отправки рассылки');
+      }
+    }
+
+    // Обработчики событий
+    document.getElementById('selectAll').addEventListener('change', (e) => {
+      document.querySelectorAll('.lead-checkbox').forEach(cb => {
+        cb.checked = e.target.checked;
+        const index = parseInt(cb.dataset.index);
+        if (e.target.checked) {
+          selectedLeads.add(index);
+        } else {
+          selectedLeads.delete(index);
+        }
+      });
+      updateBroadcastButton();
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', exportCSV);
+
+    document.getElementById('broadcastBtn').addEventListener('click', () => {
+      document.getElementById('broadcastCount').textContent = selectedLeads.size;
+      broadcastModal.classList.remove('hidden');
+      broadcastModal.style.display = 'flex';
+    });
+
+    document.getElementById('cancelBroadcast').addEventListener('click', () => {
+      broadcastModal.classList.add('hidden');
+      broadcastModal.style.display = 'none';
+    });
+
+    document.getElementById('sendBroadcast').addEventListener('click', sendBroadcast);
+
+    // Закрытие модального окна по клику вне
+    broadcastModal.addEventListener('click', (e) => {
+      if (e.target === broadcastModal) {
+        broadcastModal.classList.add('hidden');
+        broadcastModal.style.display = 'none';
+      }
+    });
+
+    // Загрузка данных при старте
+    loadCRMData();
+  </script>
+</body>
+</html>
