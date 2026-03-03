@@ -1,287 +1,407 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>CRM Дашборд | NeuroGen</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body {
-      background-color: var(--tg-theme-bg-color, #f3f4f6);
-      color: var(--tg-theme-text-color, #000000);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    }
-    .stat-card {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
-    .stat-card.paid {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    }
-    .btn-primary {
-      background-color: var(--tg-theme-button-color, #667eea);
-      color: var(--tg-theme-button-text-color, #ffffff);
-    }
-    /* Скроллбар для таблицы */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
-  </style>
-</head>
-<body class="min-h-screen pb-24">
-  <header class="bg-white dark:bg-gray-800 shadow-sm p-4 sticky top-0 z-10">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-lg font-bold dark:text-white">📊 CRM NeuroGen</h1>
-        <p class="text-xs text-gray-500" id="adminWelcome">Загрузка...</p>
-      </div>
-      <div id="connectionStatus" class="h-2 w-2 rounded-full bg-yellow-400 animate-pulse"></div>
-    </div>
-  </header>
-
-  <div class="p-4 grid grid-cols-2 gap-3">
-    <div class="stat-card rounded-xl p-4 shadow-md">
-      <div class="text-3xl font-bold" id="totalLeads">-</div>
-      <div class="text-xs opacity-90 uppercase tracking-wider">Всего лидов</div>
-    </div>
-    <div class="stat-card paid rounded-xl p-4 shadow-md">
-      <div class="text-3xl font-bold" id="paidLeads">-</div>
-      <div class="text-xs opacity-90 uppercase tracking-wider">Продажи (PRO)</div>
-    </div>
-  </div>
-
-  <div class="px-4 mb-4">
-    <div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm overflow-x-auto">
-      <div class="flex gap-4 min-w-max">
-        <div class="flex flex-col items-center px-2">
-          <span class="text-xs text-gray-400">🚀 Старт</span>
-          <span class="font-bold dark:text-white" id="stageStart">0</span>
-        </div>
-        <div class="w-px bg-gray-200 dark:bg-gray-700"></div>
-        <div class="flex flex-col items-center px-2">
-          <span class="text-xs text-gray-400">🎓 Обуч.</span>
-          <span class="font-bold dark:text-white" id="stageTraining">0</span>
-        </div>
-        <div class="w-px bg-gray-200 dark:bg-gray-700"></div>
-        <div class="flex flex-col items-center px-2">
-          <span class="text-xs text-gray-400">⚡ Оффер</span>
-          <span class="font-bold dark:text-white" id="stageTripwire">0</span>
-        </div>
-        <div class="w-px bg-gray-200 dark:bg-gray-700"></div>
-        <div class="flex flex-col items-center px-2">
-          <span class="text-xs text-gray-400">🎁 Выдача</span>
-          <span class="font-bold text-green-500" id="stageDelivery">0</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="px-4 mb-2 sticky top-16 z-10 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur-sm py-2">
-    <div class="flex gap-2 overflow-x-auto no-scrollbar">
-      <button class="filter-btn active px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-800 text-white dark:bg-white dark:text-black" data-filter="all">
-        ВСЕ
-      </button>
-      <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300" data-filter="PRO">
-        ✅ PRO
-      </button>
-      <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300" data-filter="FREE">
-        🆓 FREE
-      </button>
-      <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300" data-filter="tripwire">
-        ⌛ ДУМАЮТ
-      </button>
-    </div>
-  </div>
-
-  <div class="px-4">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden min-h-[300px]">
-      
-      <div class="p-3 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
-        <div class="flex items-center gap-2">
-          <input type="checkbox" id="selectAll" class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
-          <span class="text-xs font-medium text-gray-500 uppercase">Выбрать всех</span>
-        </div>
-        <span class="text-xs font-bold bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded-md" id="leadsCount">0</span>
-      </div>
-      
-      <div id="loading" class="flex flex-col items-center justify-center py-12">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mb-2"></div>
-        <span class="text-xs text-gray-400">Загрузка базы...</span>
-      </div>
-      
-      <div id="leadsList" class="hidden">
-        <table class="w-full">
-          <tbody id="leadsBody">
-            </tbody>
-        </table>
-      </div>
-      
-      <div id="noLeads" class="hidden py-12 text-center">
-        <div class="text-4xl mb-2">📭</div>
-        <p class="text-sm text-gray-500">Лиды не найдены</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-t dark:border-gray-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
-    <div class="flex gap-3 max-w-md mx-auto">
-      <button id="broadcastBtn" class="flex-1 btn-primary py-3 rounded-xl font-bold text-sm shadow-lg disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2" disabled>
-        <span>✉️</span> Рассылка
-      </button>
-      <button id="exportBtn" class="px-4 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-xl font-bold text-sm hover:bg-gray-200 transition-all">
-        📥 CSV
-      </button>
-    </div>
-  </div>
-
-  <div id="broadcastModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm shadow-2xl transform transition-all scale-100 p-5">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-bold dark:text-white">📢 Рассылка</h3>
-        <button id="closeModalX" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
-      </div>
-      
-      <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg mb-4 flex gap-3 items-center">
-        <div class="bg-blue-100 dark:bg-blue-800 p-2 rounded-full text-blue-600 dark:text-blue-300">👥</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>CRM Дашборд | NeuroGen</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background-color: var(--tg-theme-bg-color, #f3f4f6);
+        color: var(--tg-theme-text-color, #000000);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+      }
+      .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+      .stat-card.paid {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      }
+      .btn-primary {
+        background-color: var(--tg-theme-button-color, #667eea);
+        color: var(--tg-theme-button-text-color, #ffffff);
+      }
+      /* Скроллбар для таблицы */
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 2px;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen pb-24">
+    <header class="bg-white dark:bg-gray-800 shadow-sm p-4 sticky top-0 z-10">
+      <div class="flex items-center justify-between">
         <div>
-          <p class="text-xs text-gray-500 dark:text-gray-400">Получателей:</p>
-          <p class="text-sm font-bold text-gray-800 dark:text-gray-200"><span id="broadcastCount">0</span> чел.</p>
+          <h1 class="text-lg font-bold dark:text-white">📊 CRM NeuroGen</h1>
+          <p class="text-xs text-gray-500" id="adminWelcome">Загрузка...</p>
+        </div>
+        <div
+          id="connectionStatus"
+          class="h-2 w-2 rounded-full bg-yellow-400 animate-pulse"
+        ></div>
+      </div>
+    </header>
+
+    <div class="p-4 grid grid-cols-2 gap-3">
+      <div class="stat-card rounded-xl p-4 shadow-md">
+        <div class="text-3xl font-bold" id="totalLeads">-</div>
+        <div class="text-xs opacity-90 uppercase tracking-wider">
+          Всего лидов
         </div>
       </div>
+      <div class="stat-card paid rounded-xl p-4 shadow-md">
+        <div class="text-3xl font-bold" id="paidLeads">-</div>
+        <div class="text-xs opacity-90 uppercase tracking-wider">
+          Продажи (PRO)
+        </div>
+      </div>
+    </div>
 
-      <textarea 
-        id="broadcastMessage" 
-        class="w-full border border-gray-200 dark:border-gray-600 rounded-xl p-3 h-32 text-sm mb-4 focus:ring-2 focus:ring-purple-500 outline-none resize-none bg-gray-50 dark:bg-gray-700 dark:text-white"
-        placeholder="Привет! У меня для тебя новости..."
-      ></textarea>
-      
-      <div class="flex gap-2">
-        <button id="cancelBroadcast" class="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-medium text-gray-600 dark:text-gray-300">
-          Отмена
+    <div class="px-4 mb-4">
+      <div
+        class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm overflow-x-auto"
+      >
+        <div class="flex gap-4 min-w-max">
+          <div class="flex flex-col items-center px-2">
+            <span class="text-xs text-gray-400">🚀 Старт</span>
+            <span class="font-bold dark:text-white" id="stageStart">0</span>
+          </div>
+          <div class="w-px bg-gray-200 dark:bg-gray-700"></div>
+          <div class="flex flex-col items-center px-2">
+            <span class="text-xs text-gray-400">🎓 Обуч.</span>
+            <span class="font-bold dark:text-white" id="stageTraining">0</span>
+          </div>
+          <div class="w-px bg-gray-200 dark:bg-gray-700"></div>
+          <div class="flex flex-col items-center px-2">
+            <span class="text-xs text-gray-400">⚡ Оффер</span>
+            <span class="font-bold dark:text-white" id="stageTripwire">0</span>
+          </div>
+          <div class="w-px bg-gray-200 dark:bg-gray-700"></div>
+          <div class="flex flex-col items-center px-2">
+            <span class="text-xs text-gray-400">🎁 Выдача</span>
+            <span class="font-bold text-green-500" id="stageDelivery">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="px-4 mb-2 sticky top-16 z-10 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur-sm py-2"
+    >
+      <div class="flex gap-2 overflow-x-auto no-scrollbar">
+        <button
+          class="filter-btn active px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-800 text-white dark:bg-white dark:text-black"
+          data-filter="all"
+        >
+          ВСЕ
         </button>
-        <button id="sendBroadcast" class="flex-1 py-3 rounded-xl btn-primary font-bold text-white shadow-lg">
-          Отправить
+        <button
+          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+          data-filter="PRO"
+        >
+          ✅ PRO
+        </button>
+        <button
+          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+          data-filter="FREE"
+        >
+          🆓 FREE
+        </button>
+        <button
+          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+          data-filter="tripwire"
+        >
+          ⌛ ДУМАЮТ
         </button>
       </div>
     </div>
-  </div>
 
-  <script>
-    // ==========================================
-    // ⚙️ НАСТРОЙКИ (ИСКУССТВЕННЫЙ ИНТЕЛЛЕКТ ПОПРАВИЛ ССЫЛКУ)
-    // ==========================================
-    
-    // ПРАВИЛЬНЫЙ АДРЕС (БЕЗ .3zvepvee и БЕЗ СЛЭША В КОНЦЕ)
-    const BACKEND_URL = 'https://d5dsbah1d4ju0glmp9d0.3zvepvee.apigw.yandexcloud.net'; 
+    <div class="px-4">
+      <!-- ПОЛЕ ЖИВОГО ПОИСКА -->
+      <div class="mb-3 relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <span class="text-gray-400">🔍</span>
+        </div>
+        <input 
+          type="text" 
+          id="searchInput" 
+          class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:text-white transition-all shadow-sm" 
+          placeholder="Поиск по имени или ID..."
+        >
+      </div>
 
-    // ==========================================
+      <div
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden min-h-[300px]"
+      >
+        <div
+          class="p-3 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50"
+        >
+          <div class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="selectAll"
+              class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+            />
+            <span class="text-xs font-medium text-gray-500 uppercase"
+              >Выбрать всех</span
+            >
+          </div>
+          <span
+            class="text-xs font-bold bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded-md"
+            id="leadsCount"
+            >0</span
+          >
+        </div>
 
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
+        <div
+          id="loading"
+          class="flex flex-col items-center justify-center py-12"
+        >
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mb-2"
+          ></div>
+          <span class="text-xs text-gray-400">Загрузка базы...</span>
+        </div>
 
-    // Безопасное определение хоста
-    const API_HOST = BACKEND_URL && BACKEND_URL.startsWith('http') 
-      ? BACKEND_URL 
-      : (window.location.hostname === 'localhost' ? 'http://localhost:3000' : '');
+        <div id="leadsList" class="hidden">
+          <table class="w-full">
+            <tbody id="leadsBody"></tbody>
+          </table>
+        </div>
 
-    // State
-    let allLeads = [];
-    let filteredLeads = [];
-    let currentFilter = 'all';
-    let selectedUserIds = new Set(); 
+        <div id="noLeads" class="hidden py-12 text-center">
+          <div class="text-4xl mb-2">📭</div>
+          <p class="text-sm text-gray-500">Лиды не найдены</p>
+        </div>
+      </div>
+    </div>
 
-    // Elements
-    const els = {
-      loading: document.getElementById('loading'),
-      list: document.getElementById('leadsList'),
-      body: document.getElementById('leadsBody'),
-      noData: document.getElementById('noLeads'),
-      broadcastBtn: document.getElementById('broadcastBtn'),
-      modal: document.getElementById('broadcastModal'),
-      statusDot: document.getElementById('connectionStatus')
-    };
+    <div
+      class="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-t dark:border-gray-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20"
+    >
+      <div class="flex gap-3 max-w-md mx-auto">
+        <button
+          id="broadcastBtn"
+          class="flex-1 btn-primary py-3 rounded-xl font-bold text-sm shadow-lg disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2"
+          disabled
+        >
+          <span>✉️</span> Рассылка
+        </button>
+        <button
+          id="exportBtn"
+          class="px-4 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-xl font-bold text-sm hover:bg-gray-200 transition-all"
+        >
+          📥 CSV
+        </button>
+      </div>
+    </div>
 
-    // Приветствие
-    if (tg.initDataUnsafe?.user) {
-      document.getElementById('adminWelcome').textContent = `Админ: ${tg.initDataUnsafe.user.first_name}`;
-    }
+    <div
+      id="broadcastModal"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4"
+    >
+      <div
+        class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm shadow-2xl transform transition-all scale-100 p-5"
+      >
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold dark:text-white">📢 Умная Рассылка</h3>
+          <button
+            id="closeModalX"
+            class="text-gray-400 hover:text-gray-600 text-xl"
+          >
+            &times;
+          </button>
+        </div>
 
-    // --- MAIN LOGIC ---
+        <!-- СЕГМЕНТ АУДИТОРИИ -->
+        <div class="mb-3">
+          <label class="text-xs text-gray-500 font-bold mb-1 block uppercase tracking-wide">Кому отправляем?</label>
+          <select id="broadcastTarget" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:text-white cursor-pointer transition-all">
+            <option value="selected">👉 Выбранным галочками в таблице</option>
+            <option value="all">🌍 Вообще всем в моей базе</option>
+            <option value="pro">💎 Только элите (Купили PRO)</option>
+            <option value="free">🆓 Только новичкам (На FREE-тарифе)</option>
+            <option value="offline">🏢 Сегмент: Владельцы офлайн-бизнеса</option>
+            <option value="online">💻 Сегмент: Онлайн-бизнес и блогеры</option>
+          </select>
+        </div>
 
-    async function loadData() {
-      if (!API_HOST) {
-        showError('Не настроен BACKEND_URL в HTML файле!');
-        return;
+        <textarea
+          id="broadcastMessage"
+          class="w-full border border-gray-200 dark:border-gray-600 rounded-xl p-3 h-28 text-sm mb-3 focus:ring-2 focus:ring-purple-500 outline-none resize-none bg-gray-50 dark:bg-gray-700 dark:text-white"
+          placeholder="Напиши мощный оффер..."
+        ></textarea>
+
+        <!-- КОНСТРУКТОР КНОПКИ -->
+        <div class="mb-4 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600">
+          <label class="text-xs text-gray-500 font-bold mb-2 block uppercase tracking-wide">🔗 Добавить кнопку (необязательно)</label>
+          <div class="flex gap-2">
+            <input type="text" id="btnText" placeholder="Текст (напр. Забрать)" class="w-1/2 bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded-lg p-2 text-sm outline-none focus:border-purple-500 dark:text-white">
+            <input type="text" id="btnUrl" placeholder="Ссылка (https://...)" class="w-1/2 bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded-lg p-2 text-sm outline-none focus:border-purple-500 dark:text-white">
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button
+            id="cancelBroadcast"
+            class="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-medium text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-200 dark:hover:bg-gray-600"
+          >
+            Отмена
+          </button>
+          <button
+            id="sendBroadcast"
+            class="flex-1 py-3 rounded-xl btn-primary font-bold text-white shadow-lg transition-transform active:scale-95"
+          >
+            🚀 Отправить
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ==========================================
+      // ⚙️ НАСТРОЙКИ (ИСКУССТВЕННЫЙ ИНТЕЛЛЕКТ ПОПРАВИЛ ССЫЛКУ)
+      // ==========================================
+
+      // ПРАВИЛЬНЫЙ АДРЕС (БЕЗ .3zvepvee и БЕЗ СЛЭША В КОНЦЕ)
+      const BACKEND_URL =
+        "https://d5dsbah1d4ju0glmp9d0.3zvepvee.apigw.yandexcloud.net";
+
+      // ==========================================
+
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      tg.expand();
+
+      // Безопасное определение хоста
+      const API_HOST =
+        BACKEND_URL && BACKEND_URL.startsWith("http")
+          ? BACKEND_URL
+          : window.location.hostname === "localhost"
+            ? "http://localhost:3000"
+            : "";
+
+      // State
+      let allLeads = [];
+      let filteredLeads = [];
+      let currentFilter = "all";
+      let searchQuery = ""; // ПЕРЕМЕННАЯ ДЛЯ ЖИВОГО ПОИСКА
+      let selectedUserIds = new Set();
+
+      // Elements
+      const els = {
+        loading: document.getElementById("loading"),
+        list: document.getElementById("leadsList"),
+        body: document.getElementById("leadsBody"),
+        noData: document.getElementById("noLeads"),
+        broadcastBtn: document.getElementById("broadcastBtn"),
+        modal: document.getElementById("broadcastModal"),
+        statusDot: document.getElementById("connectionStatus"),
+      };
+
+      // Приветствие
+      if (tg.initDataUnsafe?.user) {
+        document.getElementById("adminWelcome").textContent =
+          `Админ: ${tg.initDataUnsafe.user.first_name}`;
       }
 
-      const urlParams = new URLSearchParams(window.location.search);
-      const botToken = urlParams.get('bot_token');
+      // --- MAIN LOGIC ---
 
-      // Если нет токена - проверяем, не в браузере ли мы (для тестов)
-      if (!botToken) {
-        showError('Нет токена бота. (Если тестируешь в браузере, добавь ?bot_token=... в адресную строку)');
-        return;
+      async function loadData() {
+        if (!API_HOST) {
+          showError("Не настроен BACKEND_URL в HTML файле!");
+          return;
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const botToken = urlParams.get("bot_token");
+
+        // Если нет токена - проверяем, не в браузере ли мы (для тестов)
+        if (!botToken) {
+          showError(
+            "Нет токена бота. (Если тестируешь в браузере, добавь ?bot_token=... в адресную строку)",
+          );
+          return;
+        }
+
+        try {
+          const res = await fetch(`${API_HOST}/?action=get_crm_data`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-telegram-initdata": tg.initData,
+            },
+            body: JSON.stringify({ bot_token: botToken }),
+          });
+
+          if (!res.ok) throw new Error(await res.text());
+
+          const data = await res.json();
+          allLeads = data.leads || [];
+
+          updateStats(data.stats);
+          els.statusDot.classList.replace("bg-yellow-400", "bg-green-500");
+          els.statusDot.classList.remove("animate-pulse");
+
+          applyFilter("all");
+          els.loading.classList.add("hidden");
+          els.list.classList.remove("hidden");
+
+          if (allLeads.length === 0) els.noData.classList.remove("hidden");
+        } catch (e) {
+          console.error("LOAD ERROR:", e);
+          els.statusDot.classList.replace("bg-yellow-400", "bg-red-500");
+          showError("Ошибка связи с сервером. Проверь консоль (F12).");
+        }
       }
 
-      try {
-        const res = await fetch(`${API_HOST}/?action=get_crm_data`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-telegram-initdata': tg.initData
-          },
-          body: JSON.stringify({ bot_token: botToken })
-        });
+      function renderLeads() {
+        els.body.innerHTML = "";
 
-        if (!res.ok) throw new Error(await res.text());
+        // === ЗАЩИТА ОТ ЗАВИСАНИЯ: РЕНДЕРИМ ТОЛЬКО ПЕРВЫЕ 100 ЗАПИСЕЙ ===
+        // Поиск и кнопка "Выбрать всех" работают по всей базе, но браузер
+        // отрисовывает только 100 строк для производительности на слабых телефонах
+        filteredLeads.slice(0, 100).forEach((lead) => {
+          const isSelected = selectedUserIds.has(lead.user_id);
+          const tr = document.createElement("tr");
+          tr.className = `border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${isSelected ? "bg-purple-50 dark:bg-purple-900/20" : ""}`;
 
-        const data = await res.json();
-        allLeads = data.leads || [];
-        
-        updateStats(data.stats);
-        els.statusDot.classList.replace('bg-yellow-400', 'bg-green-500');
-        els.statusDot.classList.remove('animate-pulse');
-        
-        applyFilter('all');
-        els.loading.classList.add('hidden');
-        els.list.classList.remove('hidden');
+          let statusBadge = "";
+          if (lead.state === "START")
+            statusBadge = '<span class="text-xs text-gray-400">Старт</span>';
+          else if (lead.state.includes("Training"))
+            statusBadge = '<span class="text-xs text-blue-500">Обучение</span>';
+          else if (lead.state.includes("Tripwire"))
+            statusBadge = '<span class="text-xs text-orange-500">Думает</span>';
+          else if (lead.state.includes("Delivery"))
+            statusBadge =
+              '<span class="text-xs text-green-500 font-bold">Купил</span>';
+          else
+            statusBadge = `<span class="text-xs text-gray-500 truncate max-w-[80px]">${lead.state}</span>`;
 
-        if(allLeads.length === 0) els.noData.classList.remove('hidden');
-
-      } catch (e) {
-        console.error("LOAD ERROR:", e);
-        els.statusDot.classList.replace('bg-yellow-400', 'bg-red-500');
-        showError('Ошибка связи с сервером. Проверь консоль (F12).');
-      }
-    }
-
-    function renderLeads() {
-      els.body.innerHTML = '';
-      
-      filteredLeads.forEach(lead => {
-        const isSelected = selectedUserIds.has(lead.user_id);
-        const tr = document.createElement('tr');
-        tr.className = `border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${isSelected ? 'bg-purple-50 dark:bg-purple-900/20' : ''}`;
-        
-        let statusBadge = '';
-        if (lead.state === 'START') statusBadge = '<span class="text-xs text-gray-400">Старт</span>';
-        else if (lead.state.includes('Training')) statusBadge = '<span class="text-xs text-blue-500">Обучение</span>';
-        else if (lead.state.includes('Tripwire')) statusBadge = '<span class="text-xs text-orange-500">Думает</span>';
-        else if (lead.state.includes('Delivery')) statusBadge = '<span class="text-xs text-green-500 font-bold">Купил</span>';
-        else statusBadge = `<span class="text-xs text-gray-500 truncate max-w-[80px]">${lead.state}</span>`;
-
-        tr.innerHTML = `
+          tr.innerHTML = `
           <td class="px-3 py-3 w-10">
-            <input type="checkbox" 
-              class="lead-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500 cursor-pointer" 
+            <input type="checkbox"
+              class="lead-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500 cursor-pointer"
               value="${lead.user_id}"
-              ${isSelected ? 'checked' : ''}>
+              ${isSelected ? "checked" : ""}>
           </td>
           <td class="px-3 py-3">
             <div class="flex flex-col">
-              <span class="text-sm font-medium dark:text-gray-200">${lead.first_name || 'Без имени'}</span>
+              <span class="text-sm font-medium dark:text-gray-200">${lead.first_name || "Без имени"}</span>
               <span class="text-[10px] text-gray-400">ID: ${lead.user_id}</span>
             </div>
           </td>
@@ -292,175 +412,272 @@
             </div>
           </td>
         `;
-        els.body.appendChild(tr);
-      });
-
-      document.querySelectorAll('.lead-checkbox').forEach(cb => {
-        cb.addEventListener('change', (e) => {
-          if (e.target.checked) selectedUserIds.add(e.target.value);
-          else selectedUserIds.delete(e.target.value);
-          updateUI();
-        });
-      });
-      
-      document.getElementById('leadsCount').textContent = filteredLeads.length;
-    }
-
-    function updateUI() {
-      const count = selectedUserIds.size;
-      els.broadcastBtn.disabled = count === 0;
-      els.broadcastBtn.innerHTML = count > 0 
-        ? `<span>✉️</span> Рассылка (${count})` 
-        : `<span>✉️</span> Рассылка`;
-        
-      const allSelected = filteredLeads.length > 0 && filteredLeads.every(l => selectedUserIds.has(l.user_id));
-      document.getElementById('selectAll').checked = allSelected;
-    }
-
-    function applyFilter(filter) {
-      currentFilter = filter;
-      document.querySelectorAll('.filter-btn').forEach(btn => {
-        const isActive = btn.dataset.filter === filter;
-        btn.classList.toggle('bg-gray-800', isActive);
-        btn.classList.toggle('text-white', isActive);
-        btn.classList.toggle('bg-gray-200', !isActive);
-        btn.classList.toggle('text-gray-600', !isActive);
-      });
-
-      if (filter === 'all') filteredLeads = allLeads;
-      else if (filter === 'PRO') filteredLeads = allLeads.filter(l => l.bought_tripwire);
-      else if (filter === 'FREE') filteredLeads = allLeads.filter(l => !l.bought_tripwire);
-      else if (filter === 'tripwire') filteredLeads = allLeads.filter(l => l.state.includes('Tripwire') && !l.bought_tripwire);
-
-      renderLeads();
-      updateUI();
-    }
-
-    function updateStats(stats) {
-      if(!stats) return;
-      const set = (id, val) => document.getElementById(id).textContent = val;
-      set('totalLeads', stats.total);
-      set('paidLeads', stats.paid);
-      set('stageStart', stats.byStage.start);
-      set('stageTraining', stats.byStage.training);
-      set('stageTripwire', stats.byStage.tripwire);
-      set('stageDelivery', stats.byStage.delivery);
-    }
-
-    // --- ACTIONS ---
-
-    document.getElementById('selectAll').addEventListener('change', (e) => {
-      const isChecked = e.target.checked;
-      filteredLeads.forEach(l => {
-        if (isChecked) selectedUserIds.add(l.user_id);
-        else selectedUserIds.delete(l.user_id);
-      });
-      renderLeads();
-      updateUI();
-    });
-
-    document.querySelectorAll('.filter-btn').forEach(b => 
-      b.addEventListener('click', () => applyFilter(b.dataset.filter))
-    );
-
-    els.broadcastBtn.addEventListener('click', () => {
-      document.getElementById('broadcastCount').textContent = selectedUserIds.size;
-      els.modal.classList.remove('hidden');
-      els.modal.classList.add('flex');
-    });
-
-    const closeModal = () => {
-      els.modal.classList.add('hidden');
-      els.modal.classList.remove('flex');
-    };
-    document.getElementById('cancelBroadcast').addEventListener('click', closeModal);
-    document.getElementById('closeModalX').addEventListener('click', closeModal);
-
-    document.getElementById('sendBroadcast').addEventListener('click', async () => {
-      const msg = document.getElementById('broadcastMessage').value.trim();
-      if(!msg) return tg.showAlert('Напиши хоть что-нибудь!');
-
-      const btn = document.getElementById('sendBroadcast');
-      const originalText = btn.textContent;
-      btn.textContent = '⏳ Отправка...';
-      btn.disabled = true;
-
-      try {
-        const res = await fetch(`${API_HOST}/?action=send_crm_broadcast`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-telegram-initdata': tg.initData
-          },
-          body: JSON.stringify({
-            bot_token: new URLSearchParams(window.location.search).get('bot_token'),
-            message: msg,
-            user_ids: Array.from(selectedUserIds)
-          })
+          els.body.appendChild(tr);
         });
 
-        const result = await res.json();
-        if(result.error) throw new Error(result.error);
+        // Показываем подсказку, если записей больше 100
+        if (filteredLeads.length > 100) {
+          const infoTr = document.createElement("tr");
+          infoTr.className = "bg-gray-50 dark:bg-gray-800/50";
+          infoTr.innerHTML = `
+            <td colspan="3" class="px-3 py-2 text-center text-xs text-gray-500">
+              📊 Показано 100 из ${filteredLeads.length} записей.<br>Используй поиск или фильтры, чтобы найти нужных лидов.
+            </td>
+          `;
+          els.body.appendChild(infoTr);
+        }
 
-        // Используем нашу безопасную функцию вместо showPopup
-        showSuccess(`Отправлено: ${result.sent}\nОшибок: ${result.failed}`);
+        document.querySelectorAll(".lead-checkbox").forEach((cb) => {
+          cb.addEventListener("change", (e) => {
+            if (e.target.checked) selectedUserIds.add(e.target.value);
+            else selectedUserIds.delete(e.target.value);
+            updateUI();
+          });
+        });
+
+        document.getElementById("leadsCount").textContent =
+          filteredLeads.length;
+      }
+
+      function updateUI() {
+        const count = selectedUserIds.size;
+        els.broadcastBtn.disabled = count === 0;
+        els.broadcastBtn.innerHTML =
+          count > 0
+            ? `<span>✉️</span> Рассылка (${count})`
+            : `<span>✉️</span> Рассылка`;
+
+        const allSelected =
+          filteredLeads.length > 0 &&
+          filteredLeads.every((l) => selectedUserIds.has(l.user_id));
+        document.getElementById("selectAll").checked = allSelected;
+      }
+
+      function applyFilter(filter) {
+        currentFilter = filter;
         
-        closeModal();
-        document.getElementById('broadcastMessage').value = '';
-        selectedUserIds.clear();
+        // Обновляем визуальное состояние кнопок
+        document.querySelectorAll(".filter-btn").forEach((btn) => {
+          const isActive = btn.dataset.filter === filter;
+          btn.classList.toggle("bg-gray-800", isActive);
+          btn.classList.toggle("text-white", isActive);
+          btn.classList.toggle("bg-gray-200", !isActive);
+          btn.classList.toggle("text-gray-600", !isActive);
+        });
+
+        // 1. Сначала фильтруем по кнопкам (PRO, FREE и т.д.)
+        let baseLeads = allLeads;
+        if (filter === "all") baseLeads = allLeads;
+        else if (filter === "PRO") baseLeads = allLeads.filter((l) => l.bought_tripwire);
+        else if (filter === "FREE") baseLeads = allLeads.filter((l) => !l.bought_tripwire);
+        else if (filter === "tripwire") baseLeads = allLeads.filter((l) => l.state.includes("Tripwire") && !l.bought_tripwire);
+
+        // 2. Затем фильтруем результат по тексту поиска (если он есть)
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          filteredLeads = baseLeads.filter((l) => {
+            const nameMatch = l.first_name && l.first_name.toLowerCase().includes(query);
+            const idMatch = l.user_id && l.user_id.toString().includes(query);
+            return nameMatch || idMatch;
+          });
+        } else {
+          filteredLeads = baseLeads;
+        }
+
+        renderLeads();
         updateUI();
-        renderLeads(); 
-
-      } catch (e) {
-        showError('Ошибка отправки: ' + e.message);
-      } finally {
-        btn.textContent = originalText;
-        btn.disabled = false;
       }
-    });
 
-    document.getElementById('exportBtn').addEventListener('click', async () => {
-       const botToken = new URLSearchParams(window.location.search).get('bot_token');
-       
-       try {
-         const res = await fetch(`${API_HOST}/?action=export_csv`, {
-           method: 'POST',
-           headers: { 'x-telegram-initdata': tg.initData },
-           body: JSON.stringify({ bot_token: botToken })
-         });
-         const blob = await res.blob();
-         const url = window.URL.createObjectURL(blob);
-         const a = document.createElement('a');
-         a.href = url;
-         a.download = "leads.csv";
-         a.click();
-       } catch(e) {
-         showError("Ошибка скачивания CSV");
-       }
-    });
-
-    // === ИСПРАВЛЕННАЯ ОБРАБОТКА ОШИБОК ===
-    function showError(msg) {
-      console.error("SHOW ERROR:", msg);
-      // Проверяем версию API, чтобы не падать в браузере или старом TG
-      if (tg.isVersionAtLeast && tg.isVersionAtLeast('6.2')) {
-        tg.showPopup({ title: "Ошибка", message: msg });
-      } else {
-        alert("❌ " + msg);
+      function updateStats(stats) {
+        if (!stats) return;
+        const set = (id, val) =>
+          (document.getElementById(id).textContent = val);
+        set("totalLeads", stats.total);
+        set("paidLeads", stats.paid);
+        set("stageStart", stats.byStage.start);
+        set("stageTraining", stats.byStage.training);
+        set("stageTripwire", stats.byStage.tripwire);
+        set("stageDelivery", stats.byStage.delivery);
       }
-    }
 
-    function showSuccess(msg) {
-      if (tg.isVersionAtLeast && tg.isVersionAtLeast('6.2')) {
-        tg.showPopup({ title: "Успешно!", message: msg });
-      } else {
-        alert("✅ " + msg);
+      // --- ACTIONS ---
+
+      // Слушатель для живого поиска
+      document.getElementById("searchInput").addEventListener("input", (e) => {
+        searchQuery = e.target.value.trim();
+        applyFilter(currentFilter); // Перевызываем фильтрацию с учётом нового текста
+      });
+
+      document.getElementById("selectAll").addEventListener("change", (e) => {
+        const isChecked = e.target.checked;
+        filteredLeads.forEach((l) => {
+          if (isChecked) selectedUserIds.add(l.user_id);
+          else selectedUserIds.delete(l.user_id);
+        });
+        renderLeads();
+        updateUI();
+      });
+
+      document
+        .querySelectorAll(".filter-btn")
+        .forEach((b) =>
+          b.addEventListener("click", () => applyFilter(b.dataset.filter)),
+        );
+
+      els.broadcastBtn.addEventListener("click", () => {
+        document.getElementById("broadcastCount").textContent =
+          selectedUserIds.size;
+        els.modal.classList.remove("hidden");
+        els.modal.classList.add("flex");
+      });
+
+      const closeModal = () => {
+        els.modal.classList.add("hidden");
+        els.modal.classList.remove("flex");
+      };
+      document
+        .getElementById("cancelBroadcast")
+        .addEventListener("click", closeModal);
+      document
+        .getElementById("closeModalX")
+        .addEventListener("click", closeModal);
+
+      document
+        .getElementById("sendBroadcast")
+        .addEventListener("click", async () => {
+          const msg = document.getElementById("broadcastMessage").value.trim();
+          if (!msg) return showError("Текст сообщения не может быть пустым!");
+
+          // Считываем значения из новых графических элементов
+          const target = document.getElementById("broadcastTarget").value;
+          const btnText = document.getElementById("btnText").value.trim();
+          const btnUrl = document.getElementById("btnUrl").value.trim();
+
+          const btn = document.getElementById("sendBroadcast");
+          const originalText = btn.innerHTML;
+          btn.innerHTML = "⏳ Отправка...";
+          btn.disabled = true;
+
+          // Формируем базу для отправки
+          let requestPayload = {
+            bot_token: new URLSearchParams(window.location.search).get("bot_token"),
+            message: msg
+          };
+
+          // 1. УМНАЯ СБОРКА АУДИТОРИИ
+          if (target === "selected") {
+            // Отправляем только тем, кого прокликали галочками в таблице
+            requestPayload.user_ids = Array.from(selectedUserIds);
+            if (requestPayload.user_ids.length === 0) {
+              btn.innerHTML = originalText;
+              btn.disabled = false;
+              return showError("Ты выбрал режим 'Выбранным в таблице', но не поставил ни одной галочки!");
+            }
+          } else {
+            // Для остальных вариантов используем умные фильтры бэкенда
+            requestPayload.filters = {};
+            if (target === "pro") requestPayload.filters.is_pro = true;
+            if (target === "free") requestPayload.filters.is_pro = false;
+            if (target === "offline") requestPayload.filters.tag = "segment_offline";
+            if (target === "online") requestPayload.filters.tag = "segment_online";
+            // Если target === "all", объект filters остается пустым, бэкенд отправит всем
+          }
+
+          // 2. ДОБАВЛЕНИЕ ИНЛАЙН-КНОПКИ В TELEGRAM
+          if (btnText && btnUrl) {
+            // Простейшая валидация ссылки
+            if (!btnUrl.startsWith("http")) {
+              btn.innerHTML = originalText;
+              btn.disabled = false;
+              return showError("Ссылка должна начинаться с http:// или https://");
+            }
+            // Формируем структуру клавиатуры для Telegram
+            requestPayload.reply_markup = {
+              inline_keyboard: [
+                [{ text: btnText, url: btnUrl }]
+              ]
+            };
+          }
+
+          try {
+            const res = await fetch(`${API_HOST}/?action=send_crm_broadcast`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-telegram-initdata": tg.initData,
+              },
+              body: JSON.stringify(requestPayload),
+            });
+
+            const result = await res.json();
+            if (result.error) throw new Error(result.error);
+
+            showSuccess(`🔥 Успешно доставлено: ${result.sent} чел.\nОшибок: ${result.failed}`);
+
+            // Очищаем форму после успеха
+            closeModal();
+            document.getElementById("broadcastMessage").value = "";
+            document.getElementById("btnText").value = "";
+            document.getElementById("btnUrl").value = "";
+            document.getElementById("broadcastTarget").value = "selected";
+            
+            selectedUserIds.clear();
+            document.getElementById("selectAll").checked = false;
+            updateUI();
+            renderLeads();
+          } catch (e) {
+            showError("Ошибка отправки: " + e.message);
+          } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          }
+        });
+
+      document
+        .getElementById("exportBtn")
+        .addEventListener("click", async () => {
+          const botToken = new URLSearchParams(window.location.search).get(
+            "bot_token",
+          );
+
+          try {
+            const res = await fetch(`${API_HOST}/?action=export_csv`, {
+              method: "POST",
+              headers: { "x-telegram-initdata": tg.initData },
+              body: JSON.stringify({ bot_token: botToken }),
+            });
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "leads.csv";
+            a.click();
+          } catch (e) {
+            showError("Ошибка скачивания CSV");
+          }
+        });
+
+      // === ИСПРАВЛЕННАЯ ОБРАБОТКА ОШИБОК ===
+      function showError(msg) {
+        console.error("SHOW ERROR:", msg);
+        // Проверяем версию API, чтобы не падать в браузере или старом TG
+        if (tg.isVersionAtLeast && tg.isVersionAtLeast("6.2")) {
+          tg.showPopup({ title: "Ошибка", message: msg });
+        } else {
+          alert("❌ " + msg);
+        }
       }
-    }
 
-    // Start
-    loadData();
+      function showSuccess(msg) {
+        if (tg.isVersionAtLeast && tg.isVersionAtLeast("6.2")) {
+          tg.showPopup({ title: "Успешно!", message: msg });
+        } else {
+          alert("✅ " + msg);
+        }
+      }
 
-  </script>
-</body>
+      // Start
+      loadData();
+    </script>
+  </body>
 </html>
