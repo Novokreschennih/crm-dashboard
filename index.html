@@ -273,20 +273,15 @@
 
     <script>
       // ==========================================
-      // ⚙️ НАСТРОЙКИ (ИСКУССТВЕННЫЙ ИНТЕЛЛЕКТ ПОПРАВИЛ ССЫЛКУ)
+      // ⚙️ НАСТРОЙКИ
       // ==========================================
-
-      // ПРАВИЛЬНЫЙ АДРЕС (БЕЗ .3zvepvee и БЕЗ СЛЭША В КОНЦЕ)
       const BACKEND_URL =
         "https://d5dsbah1d4ju0glmp9d0.3zvepvee.apigw.yandexcloud.net";
-
-      // ==========================================
 
       const tg = window.Telegram.WebApp;
       tg.ready();
       tg.expand();
 
-      // Безопасное определение хоста
       const API_HOST =
         BACKEND_URL && BACKEND_URL.startsWith("http")
           ? BACKEND_URL
@@ -294,12 +289,27 @@
             ? "http://localhost:3000"
             : "";
 
+      // === ФУНКЦИЯ-САНИТАЙЗЕР (ЗАЩИТА ОТ XSS) ===
+      function escapeHTML(str) {
+        if (!str) return "";
+        return str.toString()
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
       // State
       let allLeads = [];
       let filteredLeads = [];
       let currentFilter = "all";
-      let searchQuery = ""; // ПЕРЕМЕННАЯ ДЛЯ ЖИВОГО ПОИСКА
+      let searchQuery = "";
       let selectedUserIds = new Set();
+      
+      // === INFINITE SCROLL ПАРАМЕТРЫ ===
+      let currentDisplayCount = 0;
+      const CHUNK_SIZE = 50;
 
       // Elements
       const els = {
@@ -368,13 +378,26 @@
         }
       }
 
+      // === УМНЫЙ РЕНДЕР С INFINITE SCROLL ===
       function renderLeads() {
         els.body.innerHTML = "";
+        currentDisplayCount = 0;
+        
+        // Обновляем счетчик
+        document.getElementById("leadsCount").textContent = filteredLeads.length;
+        
+        // Загружаем первую порцию
+        loadMoreLeads();
+      }
 
-        // === ЗАЩИТА ОТ ЗАВИСАНИЯ: РЕНДЕРИМ ТОЛЬКО ПЕРВЫЕ 100 ЗАПИСЕЙ ===
-        // Поиск и кнопка "Выбрать всех" работают по всей базе, но браузер
-        // отрисовывает только 100 строк для производительности на слабых телефонах
-        filteredLeads.slice(0, 100).forEach((lead) => {
+      function loadMoreLeads() {
+        // Если вывели всех, останавливаемся
+        if (currentDisplayCount >= filteredLeads.length) return;
+
+        const nextChunk = filteredLeads.slice(currentDisplayCount, currentDisplayCount + CHUNK_SIZE);
+        const fragment = document.createDocumentFragment();
+
+        nextChunk.forEach((lead) => {
           const isSelected = selectedUserIds.has(lead.user_id);
           const tr = document.createElement("tr");
           tr.className = `border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${isSelected ? "bg-purple-50 dark:bg-purple-900/20" : ""}`;
@@ -387,57 +410,60 @@
           else if (lead.state.includes("Tripwire"))
             statusBadge = '<span class="text-xs text-orange-500">Думает</span>';
           else if (lead.state.includes("Delivery"))
-            statusBadge =
-              '<span class="text-xs text-green-500 font-bold">Купил</span>';
+            statusBadge = '<span class="text-xs text-green-500 font-bold">Купил</span>';
           else
-            statusBadge = `<span class="text-xs text-gray-500 truncate max-w-[80px]">${lead.state}</span>`;
+            statusBadge = `<span class="text-xs text-gray-500 truncate max-w-[80px]">${escapeHTML(lead.state)}</span>`;
 
           tr.innerHTML = `
-          <td class="px-3 py-3 w-10">
-            <input type="checkbox"
-              class="lead-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500 cursor-pointer"
-              value="${lead.user_id}"
-              ${isSelected ? "checked" : ""}>
-          </td>
-          <td class="px-3 py-3">
-            <div class="flex flex-col">
-              <span class="text-sm font-medium dark:text-gray-200">${lead.first_name || "Без имени"}</span>
-              <span class="text-[10px] text-gray-400">ID: ${lead.user_id}</span>
-            </div>
-          </td>
-          <td class="px-3 py-3 text-right">
-            <div class="flex flex-col items-end gap-1">
-              ${lead.bought_tripwire ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700">PRO</span>' : '<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600">FREE</span>'}
-              ${statusBadge}
-            </div>
-          </td>
-        `;
-          els.body.appendChild(tr);
-        });
-
-        // Показываем подсказку, если записей больше 100
-        if (filteredLeads.length > 100) {
-          const infoTr = document.createElement("tr");
-          infoTr.className = "bg-gray-50 dark:bg-gray-800/50";
-          infoTr.innerHTML = `
-            <td colspan="3" class="px-3 py-2 text-center text-xs text-gray-500">
-              📊 Показано 100 из ${filteredLeads.length} записей.<br>Используй поиск или фильтры, чтобы найти нужных лидов.
+            <td class="px-3 py-3 w-10">
+              <input type="checkbox"
+                class="lead-checkbox w-4 h-4 rounded text-purple-600 focus:ring-purple-500 cursor-pointer"
+                value="${escapeHTML(lead.user_id)}"
+                ${isSelected ? "checked" : ""}>
+            </td>
+            <td class="px-3 py-3">
+              <div class="flex flex-col">
+                <span class="text-sm font-medium dark:text-gray-200">${escapeHTML(lead.first_name) || "Без имени"}</span>
+                <span class="text-[10px] text-gray-400">ID: ${escapeHTML(lead.user_id)}</span>
+              </div>
+            </td>
+            <td class="px-3 py-3 text-right">
+              <div class="flex flex-col items-end gap-1">
+                ${lead.bought_tripwire ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700">PRO</span>' : '<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600">FREE</span>'}
+                ${statusBadge}
+              </div>
             </td>
           `;
-          els.body.appendChild(infoTr);
-        }
-
-        document.querySelectorAll(".lead-checkbox").forEach((cb) => {
-          cb.addEventListener("change", (e) => {
-            if (e.target.checked) selectedUserIds.add(e.target.value);
-            else selectedUserIds.delete(e.target.value);
-            updateUI();
-          });
+          fragment.appendChild(tr);
         });
 
-        document.getElementById("leadsCount").textContent =
-          filteredLeads.length;
+        els.body.appendChild(fragment);
+        currentDisplayCount += nextChunk.length;
       }
+
+      // === ДЕЛЕГИРОВАНИЕ СОБЫТИЙ ДЛЯ ЧЕКБОКСОВ ===
+      // Вешаем ОДИН слушатель на всю таблицу (работает быстрее и не ломается при подгрузке новых строк)
+      els.body.addEventListener("change", (e) => {
+        if (e.target.classList.contains("lead-checkbox")) {
+          const row = e.target.closest("tr");
+          if (e.target.checked) {
+            selectedUserIds.add(e.target.value);
+            row.classList.add("bg-purple-50", "dark:bg-purple-900/20");
+          } else {
+            selectedUserIds.delete(e.target.value);
+            row.classList.remove("bg-purple-50", "dark:bg-purple-900/20");
+          }
+          updateUI();
+        }
+      });
+
+      // === СЛУШАТЕЛЬ СКРОЛЛА (INFINITE SCROLL) ===
+      window.addEventListener("scroll", () => {
+        // Подгружаем новую порцию за 200px до конца страницы
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200) {
+          loadMoreLeads();
+        }
+      });
 
       function updateUI() {
         const count = selectedUserIds.size;
