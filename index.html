@@ -347,35 +347,55 @@
           return;
         }
 
-        try {
-          const res = await fetch(`${API_HOST}/?action=get_crm_data`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-telegram-initdata": tg.initData,
-            },
-            body: JSON.stringify({ bot_token: botToken }),
-          });
+        // === RETRY LOGIC: 3 попытки с экспоненциальной задержкой ===
+        const maxRetries = 3;
+        let retryCount = 0;
 
-          if (!res.ok) throw new Error(await res.text());
+        const loadWithRetry = async () => {
+          try {
+            const res = await fetch(`${API_HOST}/?action=get_crm_data`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-telegram-initdata": tg.initData,
+              },
+              body: JSON.stringify({ bot_token: botToken }),
+            });
 
-          const data = await res.json();
-          allLeads = data.leads || [];
+            if (!res.ok) throw new Error(await res.text());
 
-          updateStats(data.stats);
-          els.statusDot.classList.replace("bg-yellow-400", "bg-green-500");
-          els.statusDot.classList.remove("animate-pulse");
+            const data = await res.json();
+            allLeads = data.leads || [];
 
-          applyFilter("all");
-          els.loading.classList.add("hidden");
-          els.list.classList.remove("hidden");
+            updateStats(data.stats);
+            els.statusDot.classList.replace("bg-yellow-400", "bg-green-500");
+            els.statusDot.classList.remove("animate-pulse");
 
-          if (allLeads.length === 0) els.noData.classList.remove("hidden");
-        } catch (e) {
-          console.error("LOAD ERROR:", e);
-          els.statusDot.classList.replace("bg-yellow-400", "bg-red-500");
-          showError("Ошибка связи с сервером. Проверь консоль (F12).");
-        }
+            applyFilter("all");
+            els.loading.classList.add("hidden");
+            els.list.classList.remove("hidden");
+
+            if (allLeads.length === 0) els.noData.classList.remove("hidden");
+          } catch (e) {
+            retryCount++;
+            console.error(`LOAD ERROR (attempt ${retryCount}/${maxRetries}):`, e);
+
+            if (retryCount < maxRetries) {
+              // Экспоненциальная задержка: 1s, 2s, 4s
+              const delay = Math.pow(2, retryCount - 1) * 1000;
+              els.statusDot.classList.replace("bg-yellow-400", "bg-red-500");
+              showError(`Ошибка соединения. Повторная попытка через ${delay/1000}с...`);
+              
+              setTimeout(loadWithRetry, delay);
+            } else {
+              console.error("LOAD ERROR:", e);
+              els.statusDot.classList.replace("bg-yellow-400", "bg-red-500");
+              showError("Ошибка связи с сервером после 3 попыток. Проверь консоль (F12).");
+            }
+          }
+        };
+
+        loadWithRetry();
       }
 
       // === УМНЫЙ РЕНДЕР С INFINITE SCROLL ===
@@ -481,7 +501,7 @@
 
       function applyFilter(filter) {
         currentFilter = filter;
-        
+
         // Обновляем визуальное состояние кнопок
         document.querySelectorAll(".filter-btn").forEach((btn) => {
           const isActive = btn.dataset.filter === filter;
@@ -509,6 +529,13 @@
         } else {
           filteredLeads = baseLeads;
         }
+
+        // === ПАТЧ БЕЗОПАСНОСТИ РАССЫЛОК ===
+        // Очищаем выбранных людей при смене фильтра/поиска,
+        // чтобы не разослать спам скрытым записям
+        selectedUserIds.clear();
+        document.getElementById("selectAll").checked = false;
+        // ==================================
 
         renderLeads();
         updateUI();
