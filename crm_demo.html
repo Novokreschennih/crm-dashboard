@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>DEMO CRM | NeuroGen</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background-color: var(--tg-theme-bg-color, #f3f4f6);
+        color: var(--tg-theme-text-color, #000000);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+      .stat-card.paid { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+      .btn-primary { background-color: var(--tg-theme-button-color, #667eea); color: var(--tg-theme-button-text-color, #ffffff); }
+      ::-webkit-scrollbar { width: 4px; }
+      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+  </head>
+  <body class="p-4 pb-24">
+    <div class="bg-red-500 text-white text-center text-xs font-bold py-1 px-2 rounded mb-4 animate-pulse">
+      ОЗНАКОМИТЕЛЬНЫЙ ДЕМО-РЕЖИМ
+    </div>
+
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">Моя База</h1>
+      <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">PRO Feature</span>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="stat-card p-4 rounded-xl shadow-md">
+        <p class="text-xs opacity-80 uppercase tracking-wider">Всего лидов</p>
+        <p class="text-3xl font-bold mt-1">124</p>
+      </div>
+      <div class="stat-card paid p-4 rounded-xl shadow-md">
+        <p class="text-xs opacity-80 uppercase tracking-wider">Купили PRO</p>
+        <p class="text-3xl font-bold mt-1">15</p>
+      </div>
+    </div>
+
+    <div class="flex gap-2 mb-6">
+      <button onclick="showProAlert('Массовая рассылка')" class="flex-1 btn-primary py-3 rounded-lg font-semibold flex justify-center items-center gap-2 shadow-sm">
+        <span>📢 Рассылка</span>
+      </button>
+      <button onclick="showProAlert('Экспорт базы')" class="flex-1 bg-white border border-gray-200 text-gray-700 py-3 rounded-lg font-semibold shadow-sm">
+        📥 CSV
+      </button>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <h2 class="font-semibold text-gray-700">Последние лиды</h2>
+      </div>
+      
+      <div class="divide-y divide-gray-100">
+        <div class="p-4 flex justify-between items-center hover:bg-gray-50 cursor-pointer" onclick="showProAlert('Просмотр карточки лида')">
+          <div>
+            <p class="font-bold text-gray-900">Александр (Бизнес)</p>
+            <p class="text-xs text-gray-500 mt-1">ID: 849201 • Вчера</p>
+          </div>
+          <div class="text-right">
+            <span class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded mb-1">PRO-статус</span>
+            <p class="text-xs text-green-600 font-bold">+$10.00</p>
+          </div>
+        </div>
+
+        <div class="p-4 flex justify-between items-center hover:bg-gray-50 cursor-pointer" onclick="showProAlert('Просмотр карточки лида')">
+          <div>
+            <p class="font-bold text-gray-900">Елена Смирнова</p>
+            <p class="text-xs text-gray-500 mt-1">ID: 938211 • Сегодня</p>
+          </div>
+          <div class="text-right">
+            <span class="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded mb-1">Горячий лид</span>
+            <p class="text-xs text-gray-600 font-bold">100 NeuroCoins</p>
+          </div>
+        </div>
+
+        <div class="p-4 flex justify-between items-center hover:bg-gray-50 cursor-pointer" onclick="showProAlert('Просмотр карточки лида')">
+          <div>
+            <p class="font-bold text-gray-900">Михаил Т.</p>
+            <p class="text-xs text-gray-500 mt-1">ID: 102938 • Сегодня</p>
+          </div>
+          <div class="text-right">
+            <span class="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded mb-1">Модуль 1</span>
+            <p class="text-xs text-gray-600 font-bold">20 NeuroCoins</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const tg = window.Telegram.WebApp;
+      tg.expand();
+      tg.ready();
+
+      // Функция вызова всплывающего окна "Купи PRO"
+      function showProAlert(featureName) {
+        if (tg.HapticFeedback) {
+          tg.HapticFeedback.notificationOccurred('warning');
+        }
+        
+        const message = `Функция «${featureName}» заблокирована 🔒\n\nВ демо-режиме управление базой недоступно. Активируйте PRO-статус в боте, чтобы получить доступ к своим реальным лидам и делать по ним рассылки!`;
+        
+        if (tg.isVersionAtLeast && tg.isVersionAtLeast("6.2")) {
+          tg.showPopup({
+            title: "Требуется PRO-статус",
+            message: message,
+            buttons: [{ type: "close", text: "Понятно" }]
+          });
+        } else {
+          alert(message);
+        }
+      }
+    </script>
+  </body>
+</html>
