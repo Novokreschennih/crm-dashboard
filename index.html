@@ -127,6 +127,46 @@
           ⌛ ДУМАЮТ
         </button>
       </div>
+
+      <!-- СЕГМЕНТЫ АУДИТОРИИ ДЛЯ РАССЫЛКИ -->
+      <div class="flex gap-2 overflow-x-auto no-scrollbar mt-2">
+        <button
+          class="segment-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+          data-segment="selected"
+        >
+          👉 Выбранные
+        </button>
+        <button
+          class="segment-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+          data-segment="all"
+        >
+          🌍 Всем в базе
+        </button>
+        <button
+          class="segment-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+          data-segment="pro"
+        >
+          💎 PRO
+        </button>
+        <button
+          class="segment-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+          data-segment="free"
+        >
+          🆓 FREE
+        </button>
+        <button
+          class="segment-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+          data-segment="offline"
+        >
+          🏢 Офлайн
+        </button>
+        <button
+          class="segment-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+          data-segment="online"
+        >
+          💻 Онлайн
+        </button>
+      </div>
     </div>
 
     <div class="px-4">
@@ -243,27 +283,6 @@
           <span class="text-xs text-gray-500 dark:text-gray-400"> лидов</span>
         </div>
 
-        <!-- СЕГМЕНТ АУДИТОРИИ -->
-        <div class="mb-3">
-          <label
-            class="text-xs text-gray-500 font-bold mb-1 block uppercase tracking-wide"
-            >Кому отправляем?</label
-          >
-          <select
-            id="broadcastTarget"
-            class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:text-white cursor-pointer transition-all"
-          >
-            <option value="selected">👉 Выбранным галочками в таблице</option>
-            <option value="all">🌍 Вообще всем в моей базе</option>
-            <option value="pro">💎 Только элите (Купили PRO)</option>
-            <option value="free">🆓 Только новичкам (На FREE-тарифе)</option>
-            <option value="offline">
-              🏢 Сегмент: Владельцы офлайн-бизнеса
-            </option>
-            <option value="online">💻 Сегмент: Онлайн-бизнес и блогеры</option>
-          </select>
-        </div>
-
         <textarea
           id="broadcastMessage"
           class="w-full border border-gray-200 dark:border-gray-600 rounded-xl p-3 h-28 text-sm mb-3 focus:ring-2 focus:ring-purple-500 outline-none resize-none bg-gray-50 dark:bg-gray-700 dark:text-white"
@@ -345,6 +364,7 @@
       let allLeads = [];
       let filteredLeads = [];
       let currentFilter = "all";
+      let selectedSegment = "selected"; // Сегмент для рассылки
       let searchQuery = "";
       let selectedUserIds = new Set();
 
@@ -675,6 +695,31 @@
         set("stageDelivery", stats.byStage.delivery);
       }
 
+      // Подсчёт количества лидов для выбранного сегмента
+      function updateBroadcastCount() {
+        let count = 0;
+
+        if (selectedSegment === "selected") {
+          count = selectedUserIds.size;
+        } else if (selectedSegment === "all") {
+          count = allLeads.length;
+        } else if (selectedSegment === "pro") {
+          count = allLeads.filter((l) => l.bought_tripwire).length;
+        } else if (selectedSegment === "free") {
+          count = allLeads.filter((l) => !l.bought_tripwire).length;
+        } else if (selectedSegment === "offline") {
+          count = allLeads.filter((l) =>
+            (l.session?.tags || []).includes("segment_offline"),
+          ).length;
+        } else if (selectedSegment === "online") {
+          count = allLeads.filter((l) =>
+            (l.session?.tags || []).includes("segment_online"),
+          ).length;
+        }
+
+        document.getElementById("broadcastCount").textContent = count;
+      }
+
       // --- ACTIONS ---
 
       // Слушатель для живого поиска
@@ -699,9 +744,25 @@
           b.addEventListener("click", () => applyFilter(b.dataset.filter)),
         );
 
+      // Обработчик кнопок сегментов для рассылки
+      document.querySelectorAll(".segment-btn").forEach((b) =>
+        b.addEventListener("click", () => {
+          selectedSegment = b.dataset.segment;
+          // Обновляем визуальное состояние
+          document.querySelectorAll(".segment-btn").forEach((btn) => {
+            const isActive = btn.dataset.segment === selectedSegment;
+            btn.classList.toggle("bg-gray-800", isActive);
+            btn.classList.toggle("text-white", isActive);
+            btn.classList.toggle("bg-gray-200", !isActive);
+            btn.classList.toggle("text-gray-600", !isActive);
+          });
+          // Обновляем счётчик при смене сегмента
+          updateBroadcastCount();
+        }),
+      );
+
       els.broadcastBtn.addEventListener("click", () => {
-        document.getElementById("broadcastCount").textContent =
-          selectedUserIds.size;
+        updateBroadcastCount();
         els.modal.classList.remove("hidden");
         els.modal.classList.add("flex");
       });
@@ -723,8 +784,7 @@
           const msg = document.getElementById("broadcastMessage").value.trim();
           if (!msg) return showError("Текст сообщения не может быть пустым!");
 
-          // Считываем значения из новых графических элементов
-          const target = document.getElementById("broadcastTarget").value;
+          // Используем выбранный сегмент
           const btnText = document.getElementById("btnText").value.trim();
           const btnUrl = document.getElementById("btnUrl").value.trim();
 
@@ -742,7 +802,7 @@
           };
 
           // 1. УМНАЯ СБОРКА АУДИТОРИИ
-          if (target === "selected") {
+          if (selectedSegment === "selected") {
             // Отправляем только тем, кого прокликали галочками в таблице
             requestPayload.user_ids = Array.from(selectedUserIds);
             if (requestPayload.user_ids.length === 0) {
@@ -755,13 +815,14 @@
           } else {
             // Для остальных вариантов используем умные фильтры бэкенда
             requestPayload.filters = {};
-            if (target === "pro") requestPayload.filters.is_pro = true;
-            if (target === "free") requestPayload.filters.is_pro = false;
-            if (target === "offline")
+            if (selectedSegment === "pro") requestPayload.filters.is_pro = true;
+            if (selectedSegment === "free")
+              requestPayload.filters.is_pro = false;
+            if (selectedSegment === "offline")
               requestPayload.filters.tag = "segment_offline";
-            if (target === "online")
+            if (selectedSegment === "online")
               requestPayload.filters.tag = "segment_online";
-            // Если target === "all", объект filters остается пустым, бэкенд отправит всем
+            // Если selectedSegment === "all", объект filters остается пустым, бэкенд отправит всем
           }
 
           // 2. ДОБАВЛЕНИЕ ИНЛАЙН-КНОПКИ В TELEGRAM
