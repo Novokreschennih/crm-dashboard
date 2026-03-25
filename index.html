@@ -101,30 +101,54 @@
     <div
       class="px-4 mb-2 sticky top-16 z-10 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur-sm py-2"
     >
-      <div class="flex gap-2 overflow-x-auto no-scrollbar">
+      <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
         <button
-          class="filter-btn active px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-800 text-white dark:bg-white dark:text-black"
+          class="filter-btn active px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-800 text-white dark:bg-white dark:text-black shadow-sm whitespace-nowrap"
           data-filter="all"
         >
           ВСЕ
         </button>
         <button
-          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap"
           data-filter="PRO"
         >
           ✅ PRO
         </button>
         <button
-          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap"
           data-filter="FREE"
         >
           🆓 FREE
         </button>
         <button
-          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap"
+          data-filter="start"
+        >
+          🚀 СТАРТ
+        </button>
+        <button
+          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap"
+          data-filter="training"
+        >
+          🎓 ОБУЧЕНИЕ
+        </button>
+        <button
+          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap"
           data-filter="tripwire"
         >
           ⌛ ДУМАЮТ
+        </button>
+        <button
+          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap"
+          data-filter="offline"
+        >
+          🏢 ОФЛАЙН
+        </button>
+        <button
+          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap"
+          data-filter="online"
+        >
+          💻 ОНЛАЙН
         </button>
       </div>
 
@@ -268,19 +292,27 @@
           </button>
         </div>
 
-        <!-- СЧЁТЧИК ВЫБРАННЫХ -->
+        <!-- АУДИТОРИЯ РАССЫЛКИ -->
         <div
-          class="mb-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl p-2 text-center"
+          class="mb-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl p-3 text-center flex flex-col gap-1"
         >
-          <span class="text-xs text-gray-500 dark:text-gray-400"
-            >Выбрано:
-          </span>
           <span
-            id="broadcastCount"
-            class="text-lg font-bold text-purple-600 dark:text-purple-400"
-            >0</span
+            class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-bold"
+            >Аудитория:</span
           >
-          <span class="text-xs text-gray-500 dark:text-gray-400"> лидов</span>
+          <span
+            id="broadcastTargetLabel"
+            class="text-sm font-medium text-gray-800 dark:text-gray-200"
+            >Всем в базе</span
+          >
+          <div>
+            <span
+              id="broadcastCount"
+              class="text-2xl font-bold text-purple-600 dark:text-purple-400"
+              >0</span
+            >
+            <span class="text-xs text-gray-500 dark:text-gray-400"> лидов</span>
+          </div>
         </div>
 
         <textarea
@@ -605,12 +637,40 @@
       });
 
       function updateUI() {
-        const count = selectedUserIds.size;
-        els.broadcastBtn.disabled = count === 0;
-        els.broadcastBtn.innerHTML =
-          count > 0
-            ? `<span>✉️</span> Рассылка (${count})`
-            : `<span>✉️</span> Рассылка`;
+        const manualCount = selectedUserIds.size;
+
+        // Если выбраны галочки — рассылка пойдет только им
+        if (manualCount > 0) {
+          els.broadcastBtn.disabled = false;
+          els.broadcastBtn.innerHTML = `<span>✉️</span> Рассылка (${manualCount})`;
+        } else {
+          // Если галочек нет — рассылка пойдет всем, кто подходит под текущую вкладку
+          let tabCount = 0;
+          if (currentFilter === "all")
+            tabCount =
+              parseInt(document.getElementById("totalLeads").textContent) ||
+              filteredLeads.length;
+          else if (currentFilter === "PRO")
+            tabCount =
+              parseInt(document.getElementById("paidLeads").textContent) ||
+              filteredLeads.length;
+          else if (currentFilter === "start")
+            tabCount =
+              parseInt(document.getElementById("stageStart").textContent) ||
+              filteredLeads.length;
+          else if (currentFilter === "training")
+            tabCount =
+              parseInt(document.getElementById("stageTraining").textContent) ||
+              filteredLeads.length;
+          else if (currentFilter === "tripwire")
+            tabCount =
+              parseInt(document.getElementById("stageTripwire").textContent) ||
+              filteredLeads.length;
+          else tabCount = filteredLeads.length; // Фолбэк для FREE, offline, online
+
+          els.broadcastBtn.disabled = tabCount === 0;
+          els.broadcastBtn.innerHTML = `<span>✉️</span> Рассылка (${tabCount})`;
+        }
 
         const allSelected =
           filteredLeads.length > 0 &&
@@ -624,20 +684,26 @@
         // Обновляем визуальное состояние кнопок
         document.querySelectorAll(".filter-btn").forEach((btn) => {
           const isActive = btn.dataset.filter === filter;
-          btn.classList.toggle("bg-gray-800", isActive);
-          btn.classList.toggle("text-white", isActive);
-          btn.classList.toggle("bg-gray-200", !isActive);
-          btn.classList.toggle("text-gray-600", !isActive);
+
+          if (isActive) {
+            btn.className =
+              "filter-btn active px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-800 text-white dark:bg-white dark:text-black shadow-sm whitespace-nowrap";
+          } else {
+            btn.className =
+              "filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap";
+          }
         });
 
-        // УМНАЯ ФИЛЬТРАЦИЯ ПО СТАДИЯМ ВОРОНКИ
+        // УМНАЯ ФИЛЬТРАЦИЯ ПО ТАБЛИЦЕ
         let baseLeads = allLeads;
 
-        if (filter === "start") {
-          // Только те, кто на старте
+        if (filter === "PRO") {
+          baseLeads = allLeads.filter((l) => l.bought_tripwire === true);
+        } else if (filter === "FREE") {
+          baseLeads = allLeads.filter((l) => !l.bought_tripwire);
+        } else if (filter === "start") {
           baseLeads = allLeads.filter((l) => l.state === "START");
         } else if (filter === "training") {
-          // Все, кто на теории/обучении, но ЕЩЁ НЕ купили PRO
           baseLeads = allLeads.filter(
             (l) =>
               ((l.state || "").includes("Module") ||
@@ -646,7 +712,6 @@
               !l.bought_tripwire,
           );
         } else if (filter === "tripwire") {
-          // Дошли до оффера и думают (не купили)
           baseLeads = allLeads.filter(
             (l) =>
               ((l.state || "").includes("Tripwire") ||
@@ -654,9 +719,14 @@
                 l.state === "FAQ_PRO") &&
               !l.bought_tripwire,
           );
-        } else if (filter === "delivery") {
-          // Все, кто купил PRO (ПРОДУКТ)
-          baseLeads = allLeads.filter((l) => l.bought_tripwire === true);
+        } else if (filter === "offline") {
+          baseLeads = allLeads.filter((l) =>
+            (l.session?.tags || []).includes("segment_offline"),
+          );
+        } else if (filter === "online") {
+          baseLeads = allLeads.filter((l) =>
+            (l.session?.tags || []).includes("segment_online"),
+          );
         }
 
         // 2. Затем фильтруем результат по тексту поиска (если он есть)
@@ -673,8 +743,6 @@
         }
 
         // === ПАТЧ БЕЗОПАСНОСТИ РАССЫЛОК ===
-        // Очищаем выбранных людей при смене фильтра/поиска,
-        // чтобы не разослать спам скрытым записям
         selectedUserIds.clear();
         document.getElementById("selectAll").checked = false;
         // ==================================
@@ -682,6 +750,14 @@
         renderLeads();
         updateUI();
       }
+
+      // --- ACTIONS ---
+
+      // Слушатель для живого поиска
+      document.getElementById("searchInput").addEventListener("input", (e) => {
+        searchQuery = e.target.value.trim();
+        applyFilter(currentFilter);
+      });
 
       function updateStats(stats) {
         if (!stats) return;
@@ -693,31 +769,6 @@
         set("stageTraining", stats.byStage.training);
         set("stageTripwire", stats.byStage.tripwire);
         set("stageDelivery", stats.byStage.delivery);
-      }
-
-      // Подсчёт количества лидов для выбранного сегмента
-      function updateBroadcastCount() {
-        let count = 0;
-
-        if (selectedSegment === "selected") {
-          count = selectedUserIds.size;
-        } else if (selectedSegment === "all") {
-          count = allLeads.length;
-        } else if (selectedSegment === "pro") {
-          count = allLeads.filter((l) => l.bought_tripwire).length;
-        } else if (selectedSegment === "free") {
-          count = allLeads.filter((l) => !l.bought_tripwire).length;
-        } else if (selectedSegment === "offline") {
-          count = allLeads.filter((l) =>
-            (l.session?.tags || []).includes("segment_offline"),
-          ).length;
-        } else if (selectedSegment === "online") {
-          count = allLeads.filter((l) =>
-            (l.session?.tags || []).includes("segment_online"),
-          ).length;
-        }
-
-        document.getElementById("broadcastCount").textContent = count;
       }
 
       // --- ACTIONS ---
@@ -761,8 +812,33 @@
         }),
       );
 
+      // Открытие окна рассылки
       els.broadcastBtn.addEventListener("click", () => {
-        updateBroadcastCount();
+        const manualCount = selectedUserIds.size;
+        const label = document.getElementById("broadcastTargetLabel");
+        const countEl = document.getElementById("broadcastCount");
+
+        if (manualCount > 0) {
+          label.textContent = "👉 Выбрано вручную (галочками)";
+          countEl.textContent = manualCount;
+        } else {
+          const filterNames = {
+            all: "🌍 Все лиды в базе",
+            PRO: "💎 Только PRO",
+            FREE: "🆓 Только FREE",
+            start: "🚀 На этапе 'Старт'",
+            training: "🎓 На этапе 'Обучение'",
+            tripwire: "⌛ На этапе 'Думают'",
+            offline: "🏢 Офлайн сегмент",
+            online: "💻 Онлайн сегмент",
+          };
+          label.textContent = filterNames[currentFilter] || "Выбранный фильтр";
+          // Достаем цифру прямо из текста кнопки
+          const btnText = els.broadcastBtn.innerText;
+          const match = btnText.match(/\((\d+)\)/);
+          countEl.textContent = match ? match[1] : filteredLeads.length;
+        }
+
         els.modal.classList.remove("hidden");
         els.modal.classList.add("flex");
       });
@@ -778,13 +854,13 @@
         .getElementById("closeModalX")
         .addEventListener("click", closeModal);
 
+      // Отправка на бэкенд
       document
         .getElementById("sendBroadcast")
         .addEventListener("click", async () => {
           const msg = document.getElementById("broadcastMessage").value.trim();
           if (!msg) return showError("Текст сообщения не может быть пустым!");
 
-          // Используем выбранный сегмент
           const btnText = document.getElementById("btnText").value.trim();
           const btnUrl = document.getElementById("btnUrl").value.trim();
 
@@ -793,7 +869,6 @@
           btn.innerHTML = "⏳ Отправка...";
           btn.disabled = true;
 
-          // Формируем базу для отправки
           let requestPayload = {
             bot_token: new URLSearchParams(window.location.search).get(
               "bot_token",
@@ -801,33 +876,15 @@
             message: msg,
           };
 
-          // 1. УМНАЯ СБОРКА АУДИТОРИИ
-          if (selectedSegment === "selected") {
-            // Отправляем только тем, кого прокликали галочками в таблице
+          // САМАЯ ГЛАВНАЯ МАГИЯ: определяем, кому шлём
+          if (selectedUserIds.size > 0) {
             requestPayload.user_ids = Array.from(selectedUserIds);
-            if (requestPayload.user_ids.length === 0) {
-              btn.innerHTML = originalText;
-              btn.disabled = false;
-              return showError(
-                "Ты выбрал режим 'Выбранным в таблице', но не поставил ни одной галочки!",
-              );
-            }
           } else {
-            // Для остальных вариантов используем умные фильтры бэкенда
-            requestPayload.filters = {};
-            if (selectedSegment === "pro") requestPayload.filters.is_pro = true;
-            if (selectedSegment === "free")
-              requestPayload.filters.is_pro = false;
-            if (selectedSegment === "offline")
-              requestPayload.filters.tag = "segment_offline";
-            if (selectedSegment === "online")
-              requestPayload.filters.tag = "segment_online";
-            // Если selectedSegment === "all", объект filters остается пустым, бэкенд отправит всем
+            // Передаем бэкенду название текущей вкладки!
+            requestPayload.filters = { filter_tab: currentFilter };
           }
 
-          // 2. ДОБАВЛЕНИЕ ИНЛАЙН-КНОПКИ В TELEGRAM
           if (btnText && btnUrl) {
-            // Простейшая валидация ссылки
             if (!btnUrl.startsWith("http")) {
               btn.innerHTML = originalText;
               btn.disabled = false;
@@ -835,7 +892,6 @@
                 "Ссылка должна начинаться с http:// или https://",
               );
             }
-            // Формируем структуру клавиатуры для Telegram
             requestPayload.reply_markup = {
               inline_keyboard: [[{ text: btnText, url: btnUrl }]],
             };
@@ -858,17 +914,14 @@
               `🔥 Успешно доставлено: ${result.sent} чел.\nОшибок: ${result.failed}`,
             );
 
-            // Очищаем форму после успеха
             closeModal();
             document.getElementById("broadcastMessage").value = "";
             document.getElementById("btnText").value = "";
             document.getElementById("btnUrl").value = "";
-            document.getElementById("broadcastTarget").value = "selected";
 
             selectedUserIds.clear();
             document.getElementById("selectAll").checked = false;
             updateUI();
-            renderLeads();
           } catch (e) {
             showError("Ошибка отправки: " + e.message);
           } finally {
