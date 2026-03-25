@@ -228,6 +228,21 @@
           </button>
         </div>
 
+        <!-- СЧЁТЧИК ВЫБРАННЫХ -->
+        <div
+          class="mb-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl p-2 text-center"
+        >
+          <span class="text-xs text-gray-500 dark:text-gray-400"
+            >Выбрано:
+          </span>
+          <span
+            id="broadcastCount"
+            class="text-lg font-bold text-purple-600 dark:text-purple-400"
+            >0</span
+          >
+          <span class="text-xs text-gray-500 dark:text-gray-400"> лидов</span>
+        </div>
+
         <!-- СЕГМЕНТ АУДИТОРИИ -->
         <div class="mb-3">
           <label
@@ -595,17 +610,34 @@
           btn.classList.toggle("text-gray-600", !isActive);
         });
 
-        // 1. Сначала фильтруем по кнопкам (PRO, FREE и т.д.)
+        // УМНАЯ ФИЛЬТРАЦИЯ ПО СТАДИЯМ ВОРОНКИ
         let baseLeads = allLeads;
-        if (filter === "all") baseLeads = allLeads;
-        else if (filter === "PRO")
-          baseLeads = allLeads.filter((l) => l.bought_tripwire);
-        else if (filter === "FREE")
-          baseLeads = allLeads.filter((l) => !l.bought_tripwire);
-        else if (filter === "tripwire")
+
+        if (filter === "start") {
+          // Только те, кто на старте
+          baseLeads = allLeads.filter((l) => l.state === "START");
+        } else if (filter === "training") {
+          // Все, кто на теории/обучении, но ЕЩЁ НЕ купили PRO
           baseLeads = allLeads.filter(
-            (l) => (l.state || "").includes("Tripwire") && !l.bought_tripwire,
+            (l) =>
+              ((l.state || "").includes("Module") ||
+                (l.state || "").includes("Theory") ||
+                (l.state || "").includes("Training")) &&
+              !l.bought_tripwire,
           );
+        } else if (filter === "tripwire") {
+          // Дошли до оффера и думают (не купили)
+          baseLeads = allLeads.filter(
+            (l) =>
+              ((l.state || "").includes("Tripwire") ||
+                (l.state || "").includes("Offer") ||
+                l.state === "FAQ_PRO") &&
+              !l.bought_tripwire,
+          );
+        } else if (filter === "delivery") {
+          // Все, кто купил PRO (ПРОДУКТ)
+          baseLeads = allLeads.filter((l) => l.bought_tripwire === true);
+        }
 
         // 2. Затем фильтруем результат по тексту поиска (если он есть)
         if (searchQuery) {
