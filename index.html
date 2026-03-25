@@ -132,15 +132,17 @@
     <div class="px-4">
       <!-- ПОЛЕ ЖИВОГО ПОИСКА -->
       <div class="mb-3 relative">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <div
+          class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+        >
           <span class="text-gray-400">🔍</span>
         </div>
-        <input 
-          type="text" 
-          id="searchInput" 
-          class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:text-white transition-all shadow-sm" 
+        <input
+          type="text"
+          id="searchInput"
+          class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:text-white transition-all shadow-sm"
           placeholder="Поиск по имени или ID..."
-        >
+        />
       </div>
 
       <div
@@ -228,13 +230,21 @@
 
         <!-- СЕГМЕНТ АУДИТОРИИ -->
         <div class="mb-3">
-          <label class="text-xs text-gray-500 font-bold mb-1 block uppercase tracking-wide">Кому отправляем?</label>
-          <select id="broadcastTarget" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:text-white cursor-pointer transition-all">
+          <label
+            class="text-xs text-gray-500 font-bold mb-1 block uppercase tracking-wide"
+            >Кому отправляем?</label
+          >
+          <select
+            id="broadcastTarget"
+            class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:text-white cursor-pointer transition-all"
+          >
             <option value="selected">👉 Выбранным галочками в таблице</option>
             <option value="all">🌍 Вообще всем в моей базе</option>
             <option value="pro">💎 Только элите (Купили PRO)</option>
             <option value="free">🆓 Только новичкам (На FREE-тарифе)</option>
-            <option value="offline">🏢 Сегмент: Владельцы офлайн-бизнеса</option>
+            <option value="offline">
+              🏢 Сегмент: Владельцы офлайн-бизнеса
+            </option>
             <option value="online">💻 Сегмент: Онлайн-бизнес и блогеры</option>
           </select>
         </div>
@@ -246,11 +256,26 @@
         ></textarea>
 
         <!-- КОНСТРУКТОР КНОПКИ -->
-        <div class="mb-4 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600">
-          <label class="text-xs text-gray-500 font-bold mb-2 block uppercase tracking-wide">🔗 Добавить кнопку (необязательно)</label>
+        <div
+          class="mb-4 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600"
+        >
+          <label
+            class="text-xs text-gray-500 font-bold mb-2 block uppercase tracking-wide"
+            >🔗 Добавить кнопку (необязательно)</label
+          >
           <div class="flex gap-2">
-            <input type="text" id="btnText" placeholder="Текст (напр. Забрать)" class="w-1/2 bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded-lg p-2 text-sm outline-none focus:border-purple-500 dark:text-white">
-            <input type="text" id="btnUrl" placeholder="Ссылка (https://...)" class="w-1/2 bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded-lg p-2 text-sm outline-none focus:border-purple-500 dark:text-white">
+            <input
+              type="text"
+              id="btnText"
+              placeholder="Текст (напр. Забрать)"
+              class="w-1/2 bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded-lg p-2 text-sm outline-none focus:border-purple-500 dark:text-white"
+            />
+            <input
+              type="text"
+              id="btnUrl"
+              placeholder="Ссылка (https://...)"
+              class="w-1/2 bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded-lg p-2 text-sm outline-none focus:border-purple-500 dark:text-white"
+            />
           </div>
         </div>
 
@@ -292,7 +317,8 @@
       // === ФУНКЦИЯ-САНИТАЙЗЕР (ЗАЩИТА ОТ XSS) ===
       function escapeHTML(str) {
         if (!str) return "";
-        return str.toString()
+        return str
+          .toString()
           .replace(/&/g, "&amp;")
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;")
@@ -306,7 +332,7 @@
       let currentFilter = "all";
       let searchQuery = "";
       let selectedUserIds = new Set();
-      
+
       // === INFINITE SCROLL ПАРАМЕТРЫ ===
       let currentDisplayCount = 0;
       const CHUNK_SIZE = 50;
@@ -331,19 +357,41 @@
       // --- MAIN LOGIC ---
 
       async function loadData() {
-        if (!API_HOST) {
-          showError("Не настроен BACKEND_URL в HTML файле!");
+        console.log("[CRM] Starting loadData...");
+        console.log("[CRM] API_HOST:", API_HOST);
+        console.log("[CRM] tg.initData exists:", !!tg.initData);
+        console.log("[CRM] tg.initDataUnsafe:", tg.initDataUnsafe);
+
+        if (!API_HOST || API_HOST === "") {
+          const errorMsg = "Не настроен BACKEND_URL в HTML файле!";
+          console.error("[CRM] " + errorMsg);
+          showError(errorMsg);
           return;
         }
 
         const urlParams = new URLSearchParams(window.location.search);
         const botToken = urlParams.get("bot_token");
 
+        console.log(
+          "[CRM] bot_token from URL:",
+          botToken ? "exists" : "MISSING",
+        );
+
         // Если нет токена - проверяем, не в браузере ли мы (для тестов)
         if (!botToken) {
-          showError(
-            "Нет токена бота. (Если тестируешь в браузере, добавь ?bot_token=... в адресную строку)",
-          );
+          const errorMsg =
+            "Нет токена бота. (Если тестируешь в браузере, добавь ?bot_token=... в адресную строку)";
+          console.error("[CRM] " + errorMsg);
+          showError(errorMsg);
+          return;
+        }
+
+        // Проверяем initData
+        if (!tg.initData) {
+          const errorMsg =
+            "Telegram initData не найден. Откройте CRM из Telegram WebApp.";
+          console.error("[CRM] " + errorMsg);
+          showError(errorMsg);
           return;
         }
 
@@ -353,6 +401,11 @@
 
         const loadWithRetry = async () => {
           try {
+            console.log(
+              "[CRM] Fetch attempt " + (retryCount + 1) + "...",
+              API_HOST + "/?action=get_crm_data",
+            );
+
             const res = await fetch(`${API_HOST}/?action=get_crm_data`, {
               method: "POST",
               headers: {
@@ -362,9 +415,17 @@
               body: JSON.stringify({ bot_token: botToken }),
             });
 
-            if (!res.ok) throw new Error(await res.text());
+            console.log("[CRM] Response status:", res.status);
+
+            if (!res.ok) {
+              const errorText = await res.text();
+              console.error("[CRM] Error response:", errorText);
+              throw new Error(errorText || `HTTP ${res.status}`);
+            }
 
             const data = await res.json();
+            console.log("[CRM] Response data:", data);
+
             allLeads = data.leads || [];
 
             updateStats(data.stats);
@@ -378,19 +439,34 @@
             if (allLeads.length === 0) els.noData.classList.remove("hidden");
           } catch (e) {
             retryCount++;
-            console.error(`LOAD ERROR (attempt ${retryCount}/${maxRetries}):`, e);
+            console.error(
+              `LOAD ERROR (attempt ${retryCount}/${maxRetries}):`,
+              e,
+            );
 
             if (retryCount < maxRetries) {
               // Экспоненциальная задержка: 1s, 2s, 4s
               const delay = Math.pow(2, retryCount - 1) * 1000;
               els.statusDot.classList.replace("bg-yellow-400", "bg-red-500");
-              showError(`Ошибка соединения. Повторная попытка через ${delay/1000}с...`);
-              
+              showError(
+                `Ошибка соединения. Повторная попытка через ${delay / 1000}с...`,
+              );
+
               setTimeout(loadWithRetry, delay);
             } else {
-              console.error("LOAD ERROR:", e);
+              console.error("LOAD ERROR FINAL:", e);
               els.statusDot.classList.replace("bg-yellow-400", "bg-red-500");
-              showError("Ошибка связи с сервером после 3 попыток. Проверь консоль (F12).");
+
+              // === ИСПРАВЛЕНИЕ: ЖЕСТКО УБИРАЕМ ЗАГРУЗЧИК И ВЫВОДИМ ОШИБКУ ===
+              els.loading.classList.add("hidden");
+              els.list.classList.add("hidden");
+              els.noData.classList.remove("hidden");
+              els.noData.innerHTML = `
+                <div class="py-8 px-4 text-center">
+                  <div class="text-4xl mb-3">🚨</div>
+                  <h3 class="text-red-500 font-bold text-lg mb-1">Сбой загрузки базы</h3>
+                  <p class="text-xs text-gray-500 break-words">${escapeHTML(e.message)}</p>
+                </div>`;
             }
           }
         };
@@ -402,10 +478,11 @@
       function renderLeads() {
         els.body.innerHTML = "";
         currentDisplayCount = 0;
-        
+
         // Обновляем счетчик
-        document.getElementById("leadsCount").textContent = filteredLeads.length;
-        
+        document.getElementById("leadsCount").textContent =
+          filteredLeads.length;
+
         // Загружаем первую порцию
         loadMoreLeads();
       }
@@ -414,7 +491,10 @@
         // Если вывели всех, останавливаемся
         if (currentDisplayCount >= filteredLeads.length) return;
 
-        const nextChunk = filteredLeads.slice(currentDisplayCount, currentDisplayCount + CHUNK_SIZE);
+        const nextChunk = filteredLeads.slice(
+          currentDisplayCount,
+          currentDisplayCount + CHUNK_SIZE,
+        );
         const fragment = document.createDocumentFragment();
 
         nextChunk.forEach((lead) => {
@@ -430,7 +510,8 @@
           else if (lead.state.includes("Tripwire"))
             statusBadge = '<span class="text-xs text-orange-500">Думает</span>';
           else if (lead.state.includes("Delivery"))
-            statusBadge = '<span class="text-xs text-green-500 font-bold">Купил</span>';
+            statusBadge =
+              '<span class="text-xs text-green-500 font-bold">Купил</span>';
           else
             statusBadge = `<span class="text-xs text-gray-500 truncate max-w-[80px]">${escapeHTML(lead.state)}</span>`;
 
@@ -480,7 +561,10 @@
       // === СЛУШАТЕЛЬ СКРОЛЛА (INFINITE SCROLL) ===
       window.addEventListener("scroll", () => {
         // Подгружаем новую порцию за 200px до конца страницы
-        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200) {
+        if (
+          window.innerHeight + window.scrollY >=
+          document.body.offsetHeight - 200
+        ) {
           loadMoreLeads();
         }
       });
@@ -514,15 +598,21 @@
         // 1. Сначала фильтруем по кнопкам (PRO, FREE и т.д.)
         let baseLeads = allLeads;
         if (filter === "all") baseLeads = allLeads;
-        else if (filter === "PRO") baseLeads = allLeads.filter((l) => l.bought_tripwire);
-        else if (filter === "FREE") baseLeads = allLeads.filter((l) => !l.bought_tripwire);
-        else if (filter === "tripwire") baseLeads = allLeads.filter((l) => l.state.includes("Tripwire") && !l.bought_tripwire);
+        else if (filter === "PRO")
+          baseLeads = allLeads.filter((l) => l.bought_tripwire);
+        else if (filter === "FREE")
+          baseLeads = allLeads.filter((l) => !l.bought_tripwire);
+        else if (filter === "tripwire")
+          baseLeads = allLeads.filter(
+            (l) => (l.state || "").includes("Tripwire") && !l.bought_tripwire,
+          );
 
         // 2. Затем фильтруем результат по тексту поиска (если он есть)
         if (searchQuery) {
           const query = searchQuery.toLowerCase();
           filteredLeads = baseLeads.filter((l) => {
-            const nameMatch = l.first_name && l.first_name.toLowerCase().includes(query);
+            const nameMatch =
+              l.first_name && l.first_name.toLowerCase().includes(query);
             const idMatch = l.user_id && l.user_id.toString().includes(query);
             return nameMatch || idMatch;
           });
@@ -613,8 +703,10 @@
 
           // Формируем базу для отправки
           let requestPayload = {
-            bot_token: new URLSearchParams(window.location.search).get("bot_token"),
-            message: msg
+            bot_token: new URLSearchParams(window.location.search).get(
+              "bot_token",
+            ),
+            message: msg,
           };
 
           // 1. УМНАЯ СБОРКА АУДИТОРИИ
@@ -624,15 +716,19 @@
             if (requestPayload.user_ids.length === 0) {
               btn.innerHTML = originalText;
               btn.disabled = false;
-              return showError("Ты выбрал режим 'Выбранным в таблице', но не поставил ни одной галочки!");
+              return showError(
+                "Ты выбрал режим 'Выбранным в таблице', но не поставил ни одной галочки!",
+              );
             }
           } else {
             // Для остальных вариантов используем умные фильтры бэкенда
             requestPayload.filters = {};
             if (target === "pro") requestPayload.filters.is_pro = true;
             if (target === "free") requestPayload.filters.is_pro = false;
-            if (target === "offline") requestPayload.filters.tag = "segment_offline";
-            if (target === "online") requestPayload.filters.tag = "segment_online";
+            if (target === "offline")
+              requestPayload.filters.tag = "segment_offline";
+            if (target === "online")
+              requestPayload.filters.tag = "segment_online";
             // Если target === "all", объект filters остается пустым, бэкенд отправит всем
           }
 
@@ -642,13 +738,13 @@
             if (!btnUrl.startsWith("http")) {
               btn.innerHTML = originalText;
               btn.disabled = false;
-              return showError("Ссылка должна начинаться с http:// или https://");
+              return showError(
+                "Ссылка должна начинаться с http:// или https://",
+              );
             }
             // Формируем структуру клавиатуры для Telegram
             requestPayload.reply_markup = {
-              inline_keyboard: [
-                [{ text: btnText, url: btnUrl }]
-              ]
+              inline_keyboard: [[{ text: btnText, url: btnUrl }]],
             };
           }
 
@@ -665,7 +761,9 @@
             const result = await res.json();
             if (result.error) throw new Error(result.error);
 
-            showSuccess(`🔥 Успешно доставлено: ${result.sent} чел.\nОшибок: ${result.failed}`);
+            showSuccess(
+              `🔥 Успешно доставлено: ${result.sent} чел.\nОшибок: ${result.failed}`,
+            );
 
             // Очищаем форму после успеха
             closeModal();
@@ -673,7 +771,7 @@
             document.getElementById("btnText").value = "";
             document.getElementById("btnUrl").value = "";
             document.getElementById("broadcastTarget").value = "selected";
-            
+
             selectedUserIds.clear();
             document.getElementById("selectAll").checked = false;
             updateUI();
