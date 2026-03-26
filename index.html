@@ -151,8 +151,7 @@
           💻 ОНЛАЙН
         </button>
       </div>
-
-     
+    </div>
 
     <div class="px-4">
       <!-- ПОЛЕ ЖИВОГО ПОИСКА -->
@@ -357,7 +356,6 @@
       let allLeads = [];
       let filteredLeads = [];
       let currentFilter = "all";
-      let selectedSegment = "selected"; // Сегмент для рассылки
       let searchQuery = "";
       let selectedUserIds = new Set();
 
@@ -755,23 +753,6 @@
         .forEach((b) =>
           b.addEventListener("click", () => applyFilter(b.dataset.filter)),
         );
-
-      // Обработчик кнопок сегментов для рассылки
-      document.querySelectorAll(".segment-btn").forEach((b) =>
-        b.addEventListener("click", () => {
-          selectedSegment = b.dataset.segment;
-          // Обновляем визуальное состояние
-          document.querySelectorAll(".segment-btn").forEach((btn) => {
-            const isActive = btn.dataset.segment === selectedSegment;
-            btn.classList.toggle("bg-gray-800", isActive);
-            btn.classList.toggle("text-white", isActive);
-            btn.classList.toggle("bg-gray-200", !isActive);
-            btn.classList.toggle("text-gray-600", !isActive);
-          });
-          // Обновляем счётчик при смене сегмента
-          updateBroadcastCount();
-        }),
-      );
 
       // Открытие окна рассылки
       els.broadcastBtn.addEventListener("click", () => {
