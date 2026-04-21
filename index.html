@@ -42,7 +42,7 @@
     </style>
   </head>
   <body class="min-h-screen pb-24">
-    <header class="bg-white dark:bg-gray-800 shadow-sm p-4 sticky top-0 z-10">
+    <header class="bg-white dark:bg-gray-800 shadow-sm p-4 sticky top-0 z-20">
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-lg font-bold dark:text-white">📊 CRM NeuroGen</h1>
@@ -70,10 +70,35 @@
       </div>
     </div>
 
+    <!-- МУЛЬТИКАНАЛЬНАЯ СТАТИСТИКА -->
+    <div class="px-4 -mt-1 mb-2">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">По каналам</span>
+        </div>
+        <div class="grid grid-cols-4 gap-2">
+          <div class="text-center p-1 rounded bg-blue-50 dark:bg-blue-900/20">
+            <div class="text-lg font-bold text-blue-600" id="statTg">0</div>
+            <div class="text-[9px] text-gray-500">✈️ TG</div>
+          </div>
+          <div class="text-center p-1 rounded bg-indigo-50 dark:bg-indigo-900/20">
+            <div class="text-lg font-bold text-indigo-600" id="statVk">0</div>
+            <div class="text-[9px] text-gray-500">💬 VK</div>
+          </div>
+          <div class="text-center p-1 rounded bg-cyan-50 dark:bg-cyan-900/20">
+            <div class="text-lg font-bold text-cyan-600" id="statWeb">0</div>
+            <div class="text-[9px] text-gray-500">🌐 Web</div>
+          </div>
+          <div class="text-center p-1 rounded bg-green-50 dark:bg-green-900/20">
+            <div class="text-lg font-bold text-green-600" id="statEmail">0</div>
+            <div class="text-[9px] text-gray-500">📧 Email</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="px-4 mb-4">
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm overflow-x-auto"
-      >
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm overflow-x-auto">
         <div class="flex gap-4 min-w-max">
           <div class="flex flex-col items-center px-2">
             <span class="text-xs text-gray-400">🚀 Старт</span>
@@ -98,107 +123,59 @@
       </div>
     </div>
 
-    <div
-      class="px-4 mb-2 sticky top-16 z-10 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur-sm py-2"
-    >
+    <!-- ФИЛЬТР ПО КАНАЛАМ -->
+    <div class="px-4 mb-2 sticky top-[72px] z-10 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur-sm py-2 border-b dark:border-gray-800">
+      <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1" id="channelFilters">
+        <button class="channel-filter-btn active px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-gray-800 text-white dark:bg-white dark:text-black shadow-sm whitespace-nowrap" data-channel="all">
+          🌐 Все каналы
+        </button>
+        <button class="channel-filter-btn px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap" data-channel="telegram">
+          ✈️ Telegram
+        </button>
+        <button class="channel-filter-btn px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap" data-channel="vk">
+          💬 VK
+        </button>
+        <button class="channel-filter-btn px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap" data-channel="web">
+          🌐 Web
+        </button>
+        <button class="channel-filter-btn px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap" data-channel="email">
+          📧 Email
+        </button>
+      </div>
+    </div>
+
+    <!-- ФИЛЬТР ПО ВОРОНКЕ -->
+    <div class="px-4 mb-2 sticky top-[116px] z-10 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur-sm py-2">
       <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-        <button
-          class="filter-btn active px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-800 text-white dark:bg-white dark:text-black shadow-sm whitespace-nowrap"
-          data-filter="all"
-        >
-          ВСЕ
-        </button>
-        <button
-          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap"
-          data-filter="PRO"
-        >
-          ✅ PRO
-        </button>
-        <button
-          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap"
-          data-filter="FREE"
-        >
-          🆓 FREE
-        </button>
-        <button
-          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap"
-          data-filter="start"
-        >
-          🚀 СТАРТ
-        </button>
-        <button
-          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap"
-          data-filter="training"
-        >
-          🎓 ОБУЧЕНИЕ
-        </button>
-        <button
-          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap"
-          data-filter="tripwire"
-        >
-          ⌛ ДУМАЮТ
-        </button>
-        <button
-          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap"
-          data-filter="offline"
-        >
-          🏢 ОФЛАЙН
-        </button>
-        <button
-          class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap"
-          data-filter="online"
-        >
-          💻 ОНЛАЙН
-        </button>
+        <button class="filter-btn active px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-800 text-white dark:bg-white dark:text-black shadow-sm whitespace-nowrap" data-filter="all">ВСЕ</button>
+        <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap" data-filter="PRO">✅ PRO</button>
+        <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap" data-filter="FREE">🆓 FREE</button>
+        <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap" data-filter="start">🚀 СТАРТ</button>
+        <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap" data-filter="training">🎓 ОБУЧЕНИЕ</button>
+        <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap" data-filter="tripwire">⌛ ДУМАЮТ</button>
       </div>
     </div>
 
     <div class="px-4">
       <!-- ПОЛЕ ЖИВОГО ПОИСКА -->
       <div class="mb-3 relative">
-        <div
-          class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-        >
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <span class="text-gray-400">🔍</span>
         </div>
-        <input
-          type="text"
-          id="searchInput"
-          class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:text-white transition-all shadow-sm"
-          placeholder="Поиск по имени или ID..."
-        />
+        <input type="text" id="searchInput" class="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:text-white transition-all shadow-sm" placeholder="Поиск по имени или ID..." />
       </div>
 
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden min-h-[300px]"
-      >
-        <div
-          class="p-3 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50"
-        >
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden min-h-[300px]">
+        <div class="p-3 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-700/50">
           <div class="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="selectAll"
-              class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-            />
-            <span class="text-xs font-medium text-gray-500 uppercase"
-              >Выбрать всех</span
-            >
+            <input type="checkbox" id="selectAll" class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" />
+            <span class="text-xs font-medium text-gray-500 uppercase">Выбрать всех</span>
           </div>
-          <span
-            class="text-xs font-bold bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded-md"
-            id="leadsCount"
-            >0</span
-          >
+          <span class="text-xs font-bold bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded-md" id="leadsCount">0</span>
         </div>
 
-        <div
-          id="loading"
-          class="flex flex-col items-center justify-center py-12"
-        >
-          <div
-            class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mb-2"
-          ></div>
+        <div id="loading" class="flex flex-col items-center justify-center py-12">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mb-2"></div>
           <span class="text-xs text-gray-400">Загрузка базы...</span>
         </div>
 
@@ -215,107 +192,52 @@
       </div>
     </div>
 
-    <div
-      class="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-t dark:border-gray-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20"
-    >
+    <!-- НИЖНЯЯ ПАНЕЛЬ ДЕЙСТВИЙ -->
+    <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-t dark:border-gray-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-30">
       <div class="flex gap-3 max-w-md mx-auto">
-        <button
-          id="broadcastBtn"
-          class="flex-1 btn-primary py-3 rounded-xl font-bold text-sm shadow-lg disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2"
-          disabled
-        >
+        <button id="broadcastBtn" class="flex-1 btn-primary py-3 rounded-xl font-bold text-sm shadow-lg disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2" disabled>
           <span>✉️</span> Рассылка
         </button>
-        <button
-          id="exportBtn"
-          class="px-4 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-xl font-bold text-sm hover:bg-gray-200 transition-all"
-        >
+        <button id="exportBtn" class="px-4 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white rounded-xl font-bold text-sm hover:bg-gray-200 transition-all">
           📥 CSV
         </button>
       </div>
     </div>
 
-    <div
-      id="broadcastModal"
-      class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4"
-    >
-      <div
-        class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm shadow-2xl transform transition-all scale-100 p-5"
-      >
+    <!-- МОДАЛЬНОЕ ОКНО РАССЫЛКИ -->
+    <div id="broadcastModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-sm shadow-2xl transform transition-all scale-100 p-5">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-bold dark:text-white">📢 Умная Рассылка</h3>
-          <button
-            id="closeModalX"
-            class="text-gray-400 hover:text-gray-600 text-xl"
-          >
-            &times;
-          </button>
+          <button id="closeModalX" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
         </div>
 
         <!-- АУДИТОРИЯ РАССЫЛКИ -->
-        <div
-          class="mb-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl p-3 text-center flex flex-col gap-1"
-        >
-          <span
-            class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-bold"
-            >Аудитория:</span
-          >
-          <span
-            id="broadcastTargetLabel"
-            class="text-sm font-medium text-gray-800 dark:text-gray-200"
-            >Всем в базе</span
-          >
+        <div class="mb-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl p-3 text-center flex flex-col gap-1">
+          <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-bold">Аудитория:</span>
+          <span id="broadcastTargetLabel" class="text-sm font-medium text-gray-800 dark:text-gray-200">Всем в базе</span>
           <div>
-            <span
-              id="broadcastCount"
-              class="text-2xl font-bold text-purple-600 dark:text-purple-400"
-              >0</span
-            >
+            <span id="broadcastCount" class="text-2xl font-bold text-purple-600 dark:text-purple-400">0</span>
             <span class="text-xs text-gray-500 dark:text-gray-400"> лидов</span>
           </div>
         </div>
 
-        <textarea
-          id="broadcastMessage"
-          class="w-full border border-gray-200 dark:border-gray-600 rounded-xl p-3 h-28 text-sm mb-3 focus:ring-2 focus:ring-purple-500 outline-none resize-none bg-gray-50 dark:bg-gray-700 dark:text-white"
-          placeholder="Напиши мощный оффер..."
-        ></textarea>
+        <textarea id="broadcastMessage" class="w-full border border-gray-200 dark:border-gray-600 rounded-xl p-3 h-28 text-sm mb-3 focus:ring-2 focus:ring-purple-500 outline-none resize-none bg-gray-50 dark:bg-gray-700 dark:text-white" placeholder="Напиши мощный оффер..."></textarea>
 
         <!-- КОНСТРУКТОР КНОПКИ -->
-        <div
-          class="mb-4 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600"
-        >
-          <label
-            class="text-xs text-gray-500 font-bold mb-2 block uppercase tracking-wide"
-            >🔗 Добавить кнопку (необязательно)</label
-          >
+        <div class="mb-4 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600">
+          <label class="text-xs text-gray-500 font-bold mb-2 block uppercase tracking-wide">🔗 Добавить кнопку (необязательно)</label>
           <div class="flex gap-2">
-            <input
-              type="text"
-              id="btnText"
-              placeholder="Текст (напр. Забрать)"
-              class="w-1/2 bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded-lg p-2 text-sm outline-none focus:border-purple-500 dark:text-white"
-            />
-            <input
-              type="text"
-              id="btnUrl"
-              placeholder="Ссылка (https://...)"
-              class="w-1/2 bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded-lg p-2 text-sm outline-none focus:border-purple-500 dark:text-white"
-            />
+            <input type="text" id="btnText" placeholder="Текст (напр. Забрать)" class="w-1/2 bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded-lg p-2 text-sm outline-none focus:border-purple-500 dark:text-white" />
+            <input type="text" id="btnUrl" placeholder="Ссылка (https://...)" class="w-1/2 bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded-lg p-2 text-sm outline-none focus:border-purple-500 dark:text-white" />
           </div>
         </div>
 
         <div class="flex gap-2">
-          <button
-            id="cancelBroadcast"
-            class="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-medium text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-200 dark:hover:bg-gray-600"
-          >
+          <button id="cancelBroadcast" class="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-medium text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-200 dark:hover:bg-gray-600">
             Отмена
           </button>
-          <button
-            id="sendBroadcast"
-            class="flex-1 py-3 rounded-xl btn-primary font-bold text-white shadow-lg transition-transform active:scale-95"
-          >
+          <button id="sendBroadcast" class="flex-1 py-3 rounded-xl btn-primary font-bold text-white shadow-lg transition-transform active:scale-95">
             🚀 Отправить
           </button>
         </div>
@@ -326,40 +248,29 @@
       // ==========================================
       // ⚙️ НАСТРОЙКИ
       // ==========================================
-      const BACKEND_URL =
-        "https://d5dsbah1d4ju0glmp9d0.3zvepvee.apigw.yandexcloud.net";
+      const BACKEND_URL = "https://d5dsbah1d4ju0glmp9d0.3zvepvee.apigw.yandexcloud.net";
 
       const tg = window.Telegram.WebApp;
       tg.ready();
       tg.expand();
 
-      const API_HOST =
-        BACKEND_URL && BACKEND_URL.startsWith("http")
-          ? BACKEND_URL
-          : window.location.hostname === "localhost"
-            ? "http://localhost:3000"
-            : "";
+      const API_HOST = BACKEND_URL && BACKEND_URL.startsWith("http") ? BACKEND_URL : "";
 
-      // === ФУНКЦИЯ-САНИТАЙЗЕР (ЗАЩИТА ОТ XSS) ===
+      // Санитайзер XSS
       function escapeHTML(str) {
         if (!str) return "";
-        return str
-          .toString()
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
+        return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
       }
 
       // State
       let allLeads = [];
       let filteredLeads = [];
-      let currentFilter = "all";
+      let currentFilter = "all";         // Воронка
+      let currentChannelFilter = "all";  // Канал
       let searchQuery = "";
       let selectedUserIds = new Set();
 
-      // === INFINITE SCROLL ПАРАМЕТРЫ ===
+      // INFINITE SCROLL
       let currentDisplayCount = 0;
       const CHUNK_SIZE = 50;
 
@@ -374,64 +285,26 @@
         statusDot: document.getElementById("connectionStatus"),
       };
 
-      // Приветствие
       if (tg.initDataUnsafe?.user) {
-        document.getElementById("adminWelcome").textContent =
-          `Админ: ${tg.initDataUnsafe.user.first_name}`;
+        document.getElementById("adminWelcome").textContent = `Админ: ${tg.initDataUnsafe.user.first_name}`;
       }
 
       // --- MAIN LOGIC ---
 
       async function loadData() {
-        console.log("[CRM] Starting loadData...");
-        console.log("[CRM] API_HOST:", API_HOST);
-        console.log("[CRM] tg.initData exists:", !!tg.initData);
-        console.log("[CRM] tg.initDataUnsafe:", tg.initDataUnsafe);
-
-        if (!API_HOST || API_HOST === "") {
-          const errorMsg = "Не настроен BACKEND_URL в HTML файле!";
-          console.error("[CRM] " + errorMsg);
-          showError(errorMsg);
-          return;
-        }
+        if (!API_HOST) return showError("Не настроен BACKEND_URL в HTML файле!");
 
         const urlParams = new URLSearchParams(window.location.search);
         const botToken = urlParams.get("bot_token");
 
-        console.log(
-          "[CRM] bot_token from URL:",
-          botToken ? "exists" : "MISSING",
-        );
+        if (!botToken) return showError("Нет токена бота.");
+        if (!tg.initData) return showError("Telegram initData не найден.");
 
-        // Если нет токена - проверяем, не в браузере ли мы (для тестов)
-        if (!botToken) {
-          const errorMsg =
-            "Нет токена бота. (Если тестируешь в браузере, добавь ?bot_token=... в адресную строку)";
-          console.error("[CRM] " + errorMsg);
-          showError(errorMsg);
-          return;
-        }
-
-        // Проверяем initData
-        if (!tg.initData) {
-          const errorMsg =
-            "Telegram initData не найден. Откройте CRM из Telegram WebApp.";
-          console.error("[CRM] " + errorMsg);
-          showError(errorMsg);
-          return;
-        }
-
-        // === RETRY LOGIC: 3 попытки с экспоненциальной задержкой ===
         const maxRetries = 3;
         let retryCount = 0;
 
         const loadWithRetry = async () => {
           try {
-            console.log(
-              "[CRM] Fetch attempt " + (retryCount + 1) + "...",
-              API_HOST + "/?action=get_crm_data",
-            );
-
             const res = await fetch(`${API_HOST}/?action=get_crm_data`, {
               method: "POST",
               headers: {
@@ -441,58 +314,35 @@
               body: JSON.stringify({ bot_token: botToken }),
             });
 
-            console.log("[CRM] Response status:", res.status);
-
-            if (!res.ok) {
-              const errorText = await res.text();
-              console.error("[CRM] Error response:", errorText);
-              throw new Error(errorText || `HTTP ${res.status}`);
-            }
+            if (!res.ok) throw new Error(await res.text() || `HTTP ${res.status}`);
 
             const data = await res.json();
-            console.log("[CRM] Response data:", data);
-
             allLeads = data.leads || [];
 
-            updateStats(data.stats);
+            // Обновляем статистику (включая каналы)
+            updateStats(data.stats, data.channelStats);
+            
             els.statusDot.classList.replace("bg-yellow-400", "bg-green-500");
             els.statusDot.classList.remove("animate-pulse");
 
-            applyFilter("all");
+            applyFilter(currentFilter, currentChannelFilter);
             els.loading.classList.add("hidden");
             els.list.classList.remove("hidden");
 
             if (allLeads.length === 0) els.noData.classList.remove("hidden");
           } catch (e) {
             retryCount++;
-            console.error(
-              `LOAD ERROR (attempt ${retryCount}/${maxRetries}):`,
-              e,
-            );
-
             if (retryCount < maxRetries) {
-              // Экспоненциальная задержка: 1s, 2s, 4s
               const delay = Math.pow(2, retryCount - 1) * 1000;
               els.statusDot.classList.replace("bg-yellow-400", "bg-red-500");
-              showError(
-                `Ошибка соединения. Повторная попытка через ${delay / 1000}с...`,
-              );
-
+              showError(`Ошибка соединения. Повтор через ${delay / 1000}с...`);
               setTimeout(loadWithRetry, delay);
             } else {
-              console.error("LOAD ERROR FINAL:", e);
               els.statusDot.classList.replace("bg-yellow-400", "bg-red-500");
-
-              // === ИСПРАВЛЕНИЕ: ЖЕСТКО УБИРАЕМ ЗАГРУЗЧИК И ВЫВОДИМ ОШИБКУ ===
               els.loading.classList.add("hidden");
               els.list.classList.add("hidden");
               els.noData.classList.remove("hidden");
-              els.noData.innerHTML = `
-                <div class="py-8 px-4 text-center">
-                  <div class="text-4xl mb-3">🚨</div>
-                  <h3 class="text-red-500 font-bold text-lg mb-1">Сбой загрузки базы</h3>
-                  <p class="text-xs text-gray-500 break-words">${escapeHTML(e.message)}</p>
-                </div>`;
+              els.noData.innerHTML = `<div class="py-8 px-4 text-center"><div class="text-4xl mb-3">🚨</div><h3 class="text-red-500 font-bold text-lg mb-1">Сбой загрузки базы</h3><p class="text-xs text-gray-500 break-words">${escapeHTML(e.message)}</p></div>`;
             }
           }
         };
@@ -500,27 +350,17 @@
         loadWithRetry();
       }
 
-      // === УМНЫЙ РЕНДЕР С INFINITE SCROLL ===
       function renderLeads() {
         els.body.innerHTML = "";
         currentDisplayCount = 0;
-
-        // Обновляем счетчик
-        document.getElementById("leadsCount").textContent =
-          filteredLeads.length;
-
-        // Загружаем первую порцию
+        document.getElementById("leadsCount").textContent = filteredLeads.length;
         loadMoreLeads();
       }
 
       function loadMoreLeads() {
-        // Если вывели всех, останавливаемся
         if (currentDisplayCount >= filteredLeads.length) return;
 
-        const nextChunk = filteredLeads.slice(
-          currentDisplayCount,
-          currentDisplayCount + CHUNK_SIZE,
-        );
+        const nextChunk = filteredLeads.slice(currentDisplayCount, currentDisplayCount + CHUNK_SIZE);
         const fragment = document.createDocumentFragment();
 
         nextChunk.forEach((lead) => {
@@ -528,18 +368,20 @@
           const tr = document.createElement("tr");
           tr.className = `border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${isSelected ? "bg-purple-50 dark:bg-purple-900/20" : ""}`;
 
+          // БЕЙДЖИ СТАТУСА (ВОРОНКА)
           let statusBadge = "";
-          if (lead.state === "START")
-            statusBadge = '<span class="text-xs text-gray-400">Старт</span>';
-          else if (lead.state.includes("Training"))
-            statusBadge = '<span class="text-xs text-blue-500">Обучение</span>';
-          else if (lead.state.includes("Tripwire"))
-            statusBadge = '<span class="text-xs text-orange-500">Думает</span>';
-          else if (lead.state.includes("Delivery"))
-            statusBadge =
-              '<span class="text-xs text-green-500 font-bold">Купил</span>';
-          else
-            statusBadge = `<span class="text-xs text-gray-500 truncate max-w-[80px]">${escapeHTML(lead.state)}</span>`;
+          if (lead.state === "START") statusBadge = '<span class="text-xs text-gray-400">Старт</span>';
+          else if (lead.state.includes("Training")) statusBadge = '<span class="text-xs text-blue-500">Обучение</span>';
+          else if (lead.state.includes("Tripwire")) statusBadge = '<span class="text-xs text-orange-500">Думает</span>';
+          else if (lead.state.includes("Delivery")) statusBadge = '<span class="text-xs text-green-500 font-bold">Купил</span>';
+          else statusBadge = `<span class="text-xs text-gray-500 truncate max-w-[80px]">${escapeHTML(lead.state)}</span>`;
+
+          // БЕЙДЖИ КАНАЛА
+          let channelBadge = "";
+          if (lead.primary_channel === 'vk') channelBadge = '<span class="text-[9px] px-1 py-0.5 rounded font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">💬 VK</span>';
+          else if (lead.primary_channel === 'web') channelBadge = '<span class="text-[9px] px-1 py-0.5 rounded font-bold bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400">🌐 Web</span>';
+          else if (lead.primary_channel === 'email') channelBadge = '<span class="text-[9px] px-1 py-0.5 rounded font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">📧 Email</span>';
+          else channelBadge = '<span class="text-[9px] px-1 py-0.5 rounded font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">✈️ TG</span>'; // По умолчанию Telegram
 
           tr.innerHTML = `
             <td class="px-3 py-3 w-10">
@@ -550,7 +392,10 @@
             </td>
             <td class="px-3 py-3">
               <div class="flex flex-col">
-                <span class="text-sm font-medium dark:text-gray-200">${escapeHTML(lead.first_name) || "Без имени"}</span>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-sm font-medium dark:text-gray-200">${escapeHTML(lead.first_name) || "Без имени"}</span>
+                  ${channelBadge}
+                </div>
                 <span class="text-[10px] text-gray-400">ID: ${escapeHTML(lead.user_id)}</span>
               </div>
             </td>
@@ -568,8 +413,6 @@
         currentDisplayCount += nextChunk.length;
       }
 
-      // === ДЕЛЕГИРОВАНИЕ СОБЫТИЙ ДЛЯ ЧЕКБОКСОВ ===
-      // Вешаем ОДИН слушатель на всю таблицу (работает быстрее и не ломается при подгрузке новых строк)
       els.body.addEventListener("change", (e) => {
         if (e.target.classList.contains("lead-checkbox")) {
           const row = e.target.closest("tr");
@@ -584,116 +427,74 @@
         }
       });
 
-      // === СЛУШАТЕЛЬ СКРОЛЛА (INFINITE SCROLL) ===
       window.addEventListener("scroll", () => {
-        // Подгружаем новую порцию за 200px до конца страницы
-        if (
-          window.innerHeight + window.scrollY >=
-          document.body.offsetHeight - 200
-        ) {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
           loadMoreLeads();
         }
       });
 
       function updateUI() {
         const manualCount = selectedUserIds.size;
-
-        // Если выбраны галочки — рассылка пойдет только им
         if (manualCount > 0) {
           els.broadcastBtn.disabled = false;
           els.broadcastBtn.innerHTML = `<span>✉️</span> Рассылка (${manualCount})`;
         } else {
-          // Если галочек нет — рассылка пойдет всем, кто подходит под текущую вкладку
-          let tabCount = 0;
-          if (currentFilter === "all")
-            tabCount =
-              parseInt(document.getElementById("totalLeads").textContent) ||
-              filteredLeads.length;
-          else if (currentFilter === "PRO")
-            tabCount =
-              parseInt(document.getElementById("paidLeads").textContent) ||
-              filteredLeads.length;
-          else if (currentFilter === "start")
-            tabCount =
-              parseInt(document.getElementById("stageStart").textContent) ||
-              filteredLeads.length;
-          else if (currentFilter === "training")
-            tabCount =
-              parseInt(document.getElementById("stageTraining").textContent) ||
-              filteredLeads.length;
-          else if (currentFilter === "tripwire")
-            tabCount =
-              parseInt(document.getElementById("stageTripwire").textContent) ||
-              filteredLeads.length;
-          else tabCount = filteredLeads.length; // Фолбэк для FREE, offline, online
-
-          els.broadcastBtn.disabled = tabCount === 0;
-          els.broadcastBtn.innerHTML = `<span>✉️</span> Рассылка (${tabCount})`;
+          els.broadcastBtn.disabled = filteredLeads.length === 0;
+          els.broadcastBtn.innerHTML = `<span>✉️</span> Рассылка (${filteredLeads.length})`;
         }
-
-        const allSelected =
-          filteredLeads.length > 0 &&
-          filteredLeads.every((l) => selectedUserIds.has(l.user_id));
+        const allSelected = filteredLeads.length > 0 && filteredLeads.every((l) => selectedUserIds.has(l.user_id));
         document.getElementById("selectAll").checked = allSelected;
       }
 
-      function applyFilter(filter) {
-        currentFilter = filter;
+      // Главная функция фильтрации (Воронка + Канал + Поиск)
+      function applyFilter(funnelFilter, channelFilter) {
+        currentFilter = funnelFilter;
+        currentChannelFilter = channelFilter;
 
-        // Обновляем визуальное состояние кнопок
+        // 1. Обновляем кнопки воронки
         document.querySelectorAll(".filter-btn").forEach((btn) => {
-          const isActive = btn.dataset.filter === filter;
-
-          if (isActive) {
-            btn.className =
-              "filter-btn active px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-800 text-white dark:bg-white dark:text-black shadow-sm whitespace-nowrap";
+          if (btn.dataset.filter === currentFilter) {
+            btn.className = "filter-btn active px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-800 text-white dark:bg-white dark:text-black shadow-sm whitespace-nowrap";
           } else {
-            btn.className =
-              "filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap";
+            btn.className = "filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap";
           }
         });
 
-        // УМНАЯ ФИЛЬТРАЦИЯ ПО ТАБЛИЦЕ
+        // 2. Обновляем кнопки каналов
+        document.querySelectorAll(".channel-filter-btn").forEach((btn) => {
+          if (btn.dataset.channel === currentChannelFilter) {
+            btn.className = "channel-filter-btn active px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-gray-800 text-white dark:bg-white dark:text-black shadow-sm whitespace-nowrap";
+          } else {
+            btn.className = "channel-filter-btn px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-gray-200 text-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:border dark:border-gray-700 hover:opacity-80 whitespace-nowrap";
+          }
+        });
+
         let baseLeads = allLeads;
 
-        if (filter === "PRO") {
-          baseLeads = allLeads.filter((l) => l.bought_tripwire === true);
-        } else if (filter === "FREE") {
-          baseLeads = allLeads.filter((l) => !l.bought_tripwire);
-        } else if (filter === "start") {
-          baseLeads = allLeads.filter((l) => l.state === "START");
-        } else if (filter === "training") {
-          baseLeads = allLeads.filter(
-            (l) =>
-              ((l.state || "").includes("Module") ||
-                (l.state || "").includes("Theory") ||
-                (l.state || "").includes("Training")) &&
-              !l.bought_tripwire,
-          );
-        } else if (filter === "tripwire") {
-          baseLeads = allLeads.filter(
-            (l) =>
-              ((l.state || "").includes("Tripwire") ||
-                (l.state || "").includes("Offer") ||
-                l.state === "FAQ_PRO") &&
-              !l.bought_tripwire,
-          );
-        } else if (filter === "offline") {
-          baseLeads = allLeads.filter((l) =>
-            (l.session?.tags || []).includes("segment_offline"),
-          );
-        } else if (filter === "online") {
-          baseLeads = allLeads.filter((l) =>
-            (l.session?.tags || []).includes("segment_online"),
-          );
+        // Фильтр по Каналу
+        if (currentChannelFilter !== 'all') {
+          // Если primary_channel не задан, считаем что это 'telegram' для обратной совместимости
+          baseLeads = baseLeads.filter(l => (l.primary_channel || 'telegram') === currentChannelFilter);
         }
 
-        // 2. Затем фильтруем результат по тексту поиска (если он есть)
+        // Фильтр по Воронке
+        if (currentFilter === "PRO") {
+          baseLeads = baseLeads.filter((l) => l.bought_tripwire === true);
+        } else if (currentFilter === "FREE") {
+          baseLeads = baseLeads.filter((l) => !l.bought_tripwire);
+        } else if (currentFilter === "start") {
+          baseLeads = baseLeads.filter((l) => l.state === "START");
+        } else if (currentFilter === "training") {
+          baseLeads = baseLeads.filter((l) => ((l.state || "").includes("Module") || (l.state || "").includes("Theory") || (l.state || "").includes("Training")) && !l.bought_tripwire);
+        } else if (currentFilter === "tripwire") {
+          baseLeads = baseLeads.filter((l) => ((l.state || "").includes("Tripwire") || (l.state || "").includes("Offer") || l.state === "FAQ_PRO") && !l.bought_tripwire);
+        }
+
+        // Фильтр по Поиску
         if (searchQuery) {
           const query = searchQuery.toLowerCase();
           filteredLeads = baseLeads.filter((l) => {
-            const nameMatch =
-              l.first_name && l.first_name.toLowerCase().includes(query);
+            const nameMatch = l.first_name && l.first_name.toLowerCase().includes(query);
             const idMatch = l.user_id && l.user_id.toString().includes(query);
             return nameMatch || idMatch;
           });
@@ -701,42 +502,46 @@
           filteredLeads = baseLeads;
         }
 
-        // === ПАТЧ БЕЗОПАСНОСТИ РАССЫЛОК ===
+        // Очищаем выбор при смене фильтра
         selectedUserIds.clear();
         document.getElementById("selectAll").checked = false;
-        // ==================================
 
         renderLeads();
         updateUI();
       }
 
-      // --- ACTIONS ---
+      // Слушатели кнопок воронки
+      document.querySelectorAll(".filter-btn").forEach((b) =>
+        b.addEventListener("click", () => applyFilter(b.dataset.filter, currentChannelFilter))
+      );
 
-      // Слушатель для живого поиска
+      // Слушатели кнопок каналов
+      document.querySelectorAll(".channel-filter-btn").forEach((b) =>
+        b.addEventListener("click", () => applyFilter(currentFilter, b.dataset.channel))
+      );
+
       document.getElementById("searchInput").addEventListener("input", (e) => {
         searchQuery = e.target.value.trim();
-        applyFilter(currentFilter);
+        applyFilter(currentFilter, currentChannelFilter); 
       });
 
-      function updateStats(stats) {
+      function updateStats(stats, channelStats) {
         if (!stats) return;
-        const set = (id, val) =>
-          (document.getElementById(id).textContent = val);
+        const set = (id, val) => (document.getElementById(id).textContent = val);
         set("totalLeads", stats.total);
         set("paidLeads", stats.paid);
         set("stageStart", stats.byStage.start);
         set("stageTraining", stats.byStage.training);
         set("stageTripwire", stats.byStage.tripwire);
         set("stageDelivery", stats.byStage.delivery);
+
+        if (channelStats) {
+          set("statTg", channelStats.telegram || 0);
+          set("statVk", channelStats.vk || 0);
+          set("statWeb", channelStats.web || 0);
+          set("statEmail", channelStats.email || 0);
+        }
       }
-
-      // --- ACTIONS ---
-
-      // Слушатель для живого поиска
-      document.getElementById("searchInput").addEventListener("input", (e) => {
-        searchQuery = e.target.value.trim();
-        applyFilter(currentFilter); // Перевызываем фильтрацию с учётом нового текста
-      });
 
       document.getElementById("selectAll").addEventListener("change", (e) => {
         const isChecked = e.target.checked;
@@ -748,12 +553,6 @@
         updateUI();
       });
 
-      document
-        .querySelectorAll(".filter-btn")
-        .forEach((b) =>
-          b.addEventListener("click", () => applyFilter(b.dataset.filter)),
-        );
-
       // Открытие окна рассылки
       els.broadcastBtn.addEventListener("click", () => {
         const manualCount = selectedUserIds.size;
@@ -764,21 +563,17 @@
           label.textContent = "👉 Выбрано вручную (галочками)";
           countEl.textContent = manualCount;
         } else {
-          const filterNames = {
-            all: "🌍 Все лиды в базе",
-            PRO: "💎 Только PRO",
-            FREE: "🆓 Только FREE",
-            start: "🚀 На этапе 'Старт'",
-            training: "🎓 На этапе 'Обучение'",
-            tripwire: "⌛ На этапе 'Думают'",
-            offline: "🏢 Офлайн сегмент",
-            online: "💻 Онлайн сегмент",
-          };
-          label.textContent = filterNames[currentFilter] || "Выбранный фильтр";
-          // Достаем цифру прямо из текста кнопки
-          const btnText = els.broadcastBtn.innerText;
-          const match = btnText.match(/\((\d+)\)/);
-          countEl.textContent = match ? match[1] : filteredLeads.length;
+          // Формируем красивое название аудитории из двух фильтров
+          const funnelNames = { all: "Все лиды", PRO: "Только PRO", FREE: "Только FREE", start: "Этап 'Старт'", training: "Этап 'Обучение'", tripwire: "Этап 'Думают'" };
+          const channelNames = { all: "Все каналы", telegram: "Telegram", vk: "VK", web: "Web", email: "Email" };
+          
+          let audienceName = funnelNames[currentFilter] || "Все";
+          if (currentChannelFilter !== 'all') {
+            audienceName += ` (${channelNames[currentChannelFilter]})`;
+          }
+          
+          label.textContent = audienceName;
+          countEl.textContent = filteredLeads.length;
         }
 
         els.modal.classList.remove("hidden");
@@ -789,17 +584,11 @@
         els.modal.classList.add("hidden");
         els.modal.classList.remove("flex");
       };
-      document
-        .getElementById("cancelBroadcast")
-        .addEventListener("click", closeModal);
-      document
-        .getElementById("closeModalX")
-        .addEventListener("click", closeModal);
+      document.getElementById("cancelBroadcast").addEventListener("click", closeModal);
+      document.getElementById("closeModalX").addEventListener("click", closeModal);
 
       // Отправка на бэкенд
-      document
-        .getElementById("sendBroadcast")
-        .addEventListener("click", async () => {
+      document.getElementById("sendBroadcast").addEventListener("click", async () => {
           const msg = document.getElementById("broadcastMessage").value.trim();
           if (!msg) return showError("Текст сообщения не может быть пустым!");
 
@@ -812,31 +601,27 @@
           btn.disabled = true;
 
           let requestPayload = {
-            bot_token: new URLSearchParams(window.location.search).get(
-              "bot_token",
-            ),
+            bot_token: new URLSearchParams(window.location.search).get("bot_token"),
             message: msg,
           };
 
-          // САМАЯ ГЛАВНАЯ МАГИЯ: определяем, кому шлём
           if (selectedUserIds.size > 0) {
             requestPayload.user_ids = Array.from(selectedUserIds);
           } else {
-            // Передаем бэкенду название текущей вкладки!
-            requestPayload.filters = { filter_tab: currentFilter };
+            // ПЕРЕДАЕМ ОБА ФИЛЬТРА В БЭКЕНД!
+            requestPayload.filters = { 
+              filter_tab: currentFilter,
+              channel: currentChannelFilter === 'all' ? null : currentChannelFilter
+            };
           }
 
           if (btnText && btnUrl) {
             if (!btnUrl.startsWith("http")) {
               btn.innerHTML = originalText;
               btn.disabled = false;
-              return showError(
-                "Ссылка должна начинаться с http:// или https://",
-              );
+              return showError("Ссылка должна начинаться с http:// или https://");
             }
-            requestPayload.reply_markup = {
-              inline_keyboard: [[{ text: btnText, url: btnUrl }]],
-            };
+            requestPayload.reply_markup = { inline_keyboard: [[{ text: btnText, url: btnUrl }]] };
           }
 
           try {
@@ -852,9 +637,17 @@
             const result = await res.json();
             if (result.error) throw new Error(result.error);
 
-            showSuccess(
-              `🔥 Успешно доставлено: ${result.sent} чел.\nОшибок: ${result.failed}`,
-            );
+            // Если бэкенд возвращает детализацию по каналам, можно показать ее:
+            let successMsg = `🔥 Успешно доставлено: ${result.sent} чел.\nОшибок: ${result.failed}`;
+            if (result.byChannel) {
+               const chStats = [];
+               if (result.byChannel.telegram) chStats.push(`TG: ${result.byChannel.telegram.sent}`);
+               if (result.byChannel.vk) chStats.push(`VK: ${result.byChannel.vk.sent}`);
+               if (result.byChannel.email) chStats.push(`Email: ${result.byChannel.email.sent}`);
+               if (chStats.length > 0) successMsg += `\n\n(${chStats.join(', ')})`;
+            }
+
+            showSuccess(successMsg);
 
             closeModal();
             document.getElementById("broadcastMessage").value = "";
@@ -872,12 +665,8 @@
           }
         });
 
-      document
-        .getElementById("exportBtn")
-        .addEventListener("click", async () => {
-          const botToken = new URLSearchParams(window.location.search).get(
-            "bot_token",
-          );
+      document.getElementById("exportBtn").addEventListener("click", async () => {
+          const botToken = new URLSearchParams(window.location.search).get("bot_token");
 
           try {
             const res = await fetch(`${API_HOST}/?action=export_csv`, {
@@ -896,10 +685,7 @@
           }
         });
 
-      // === ИСПРАВЛЕННАЯ ОБРАБОТКА ОШИБОК ===
       function showError(msg) {
-        console.error("SHOW ERROR:", msg);
-        // Проверяем версию API, чтобы не падать в браузере или старом TG
         if (tg.isVersionAtLeast && tg.isVersionAtLeast("6.2")) {
           tg.showPopup({ title: "Ошибка", message: msg });
         } else {
